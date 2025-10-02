@@ -1,0 +1,421 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { SimpleSelect } from '../components/ui/SimpleSelect';
+import { Textarea } from '../components/ui/Textarea';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Loading } from '../components/ui/Loading';
+import { adminService } from '../services/adminService';
+import { useAuth } from '../contexts/AuthContext';
+import type { CreateProjectOnBehalfData, AdminOrganization } from '../types/admin';
+import {
+  ArrowLeft,
+  Building,
+  Save,
+  AlertTriangle,
+  Plus,
+  X
+} from 'lucide-react';
+
+export const AdminCreateProjectPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { role } = useAuth();
+  const [organizations, setOrganizations] = useState<AdminOrganization[]>([]);
+  const [formData, setFormData] = useState<CreateProjectOnBehalfData>({
+    organization_id: '',
+    creation_method: 'admin',
+    name: '',
+    location: '',
+    project_type: 'Residential',
+    description: '',
+    starting_price: undefined,
+    completion_date: '',
+    amenities: [],
+    connectivity: [],
+    landmarks: [],
+    payment_plans: [],
+    custom_attributes: {},
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Dynamic array fields
+  const [newAmenity, setNewAmenity] = useState('');
+  const [newConnectivity, setNewConnectivity] = useState('');
+  const [newLandmark, setNewLandmark] = useState('');
+  const [newPaymentPlan, setNewPaymentPlan] = useState('');
+
+  useEffect(() => {
+    if (role !== 'admin') {
+      navigate('/dashboard');
+      return;
+    }
+    loadOrganizations();
+  }, [role, navigate]);
+
+  const loadOrganizations = async () => {
+    try {
+      setLoading(true);
+      // Get only developer organizations
+      const allOrgs = await adminService.getAllOrganizations({ organization_type: 'developer' });
+      setOrganizations(allOrgs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load organizations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof CreateProjectOnBehalfData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const addToArray = (field: 'amenities' | 'connectivity' | 'landmarks' | 'payment_plans', value: string) => {
+    if (value.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...(prev[field] || []), value.trim()]
+      }));
+      // Clear the input
+      switch (field) {
+        case 'amenities': setNewAmenity(''); break;
+        case 'connectivity': setNewConnectivity(''); break;
+        case 'landmarks': setNewLandmark(''); break;
+        case 'payment_plans': setNewPaymentPlan(''); break;
+      }
+    }
+  };
+
+  const removeFromArray = (field: 'amenities' | 'connectivity' | 'landmarks' | 'payment_plans', index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field]?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.organization_id) {
+      newErrors.organization_id = 'Please select a developer organization';
+    }
+    if (!formData.name.trim()) {
+      newErrors.name = 'Project name is required';
+    }
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+    }
+    if (!formData.project_type) {
+      newErrors.project_type = 'Project type is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Create project on behalf of developer
+      const project = await adminService.createProjectOnBehalf({
+        ...formData,
+        starting_price: formData.starting_price || undefined,
+        completion_date: formData.completion_date || undefined,
+      });
+
+      // Navigate to the created project
+      navigate(`/projects/${project.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card>
+          <CardContent className="text-center py-12">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
+            <p className="text-gray-600">Admin privileges required to access this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loading size="lg" text="Loading organizations..." />
+      </div>
+    );
+  }
+
+  const ArrayField: React.FC<{
+    label: string;
+    items: string[];
+    newValue: string;
+    setNewValue: (value: string) => void;
+    onAdd: () => void;
+    onRemove: (index: number) => void;
+    placeholder: string;
+  }> = ({ label, items, newValue, setNewValue, onAdd, onRemove, placeholder }) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+            placeholder={placeholder}
+            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), onAdd())}
+          />
+          <Button type="button" onClick={onAdd} variant="outline" size="sm">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+        {items.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {items.map((item, index) => (
+              <div key={index} className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                <span>{item}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(index)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin/projects')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Projects
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Create Project</h1>
+              <p className="text-gray-600">Create a new project on behalf of a developer</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Create Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="w-5 h-5" />
+              Project Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error Display */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="w-5 h-5" />
+                    <span>{error}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Developer Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Developer Organization *
+                </label>
+                <SimpleSelect
+                  value={formData.organization_id}
+                  onChange={(e) => handleInputChange('organization_id', e.target.value)}
+                >
+                  <option value="">Select a developer...</option>
+                  {organizations.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))}
+                </SimpleSelect>
+                {errors.organization_id && (
+                  <p className="mt-1 text-sm text-red-600">{errors.organization_id}</p>
+                )}
+              </div>
+
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Project Name *"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    error={errors.name}
+                    placeholder="Enter project name"
+                  />
+
+                  <Input
+                    label="Location *"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    error={errors.location}
+                    placeholder="Enter project location"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Project Type *
+                    </label>
+                    <SimpleSelect
+                      value={formData.project_type}
+                      onChange={(e) => handleInputChange('project_type', e.target.value)}
+                    >
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Mixed Use">Mixed Use</option>
+                      <option value="Villa">Villa</option>
+                      <option value="Apartment">Apartment</option>
+                    </SimpleSelect>
+                    {errors.project_type && (
+                      <p className="mt-1 text-sm text-red-600">{errors.project_type}</p>
+                    )}
+                  </div>
+
+                  <Input
+                    label="Starting Price (AED)"
+                    type="number"
+                    value={formData.starting_price || ''}
+                    onChange={(e) => handleInputChange('starting_price', e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="Enter starting price"
+                  />
+                </div>
+
+                <Input
+                  label="Completion Date"
+                  type="date"
+                  value={formData.completion_date}
+                  onChange={(e) => handleInputChange('completion_date', e.target.value)}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Enter project description"
+                    rows={4}
+                  />
+                </div>
+              </div>
+
+              {/* Project Features */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Project Features</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArrayField
+                    label="Amenities"
+                    items={formData.amenities || []}
+                    newValue={newAmenity}
+                    setNewValue={setNewAmenity}
+                    onAdd={() => addToArray('amenities', newAmenity)}
+                    onRemove={(index) => removeFromArray('amenities', index)}
+                    placeholder="Add amenity"
+                  />
+
+                  <ArrayField
+                    label="Connectivity"
+                    items={formData.connectivity || []}
+                    newValue={newConnectivity}
+                    setNewValue={setNewConnectivity}
+                    onAdd={() => addToArray('connectivity', newConnectivity)}
+                    onRemove={(index) => removeFromArray('connectivity', index)}
+                    placeholder="Add connectivity feature"
+                  />
+
+                  <ArrayField
+                    label="Landmarks"
+                    items={formData.landmarks || []}
+                    newValue={newLandmark}
+                    setNewValue={setNewLandmark}
+                    onAdd={() => addToArray('landmarks', newLandmark)}
+                    onRemove={(index) => removeFromArray('landmarks', index)}
+                    placeholder="Add nearby landmark"
+                  />
+
+                  <ArrayField
+                    label="Payment Plans"
+                    items={formData.payment_plans || []}
+                    newValue={newPaymentPlan}
+                    setNewValue={setNewPaymentPlan}
+                    onAdd={() => addToArray('payment_plans', newPaymentPlan)}
+                    onRemove={(index) => removeFromArray('payment_plans', index)}
+                    placeholder="Add payment plan"
+                  />
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex gap-4 pt-6 border-t">
+                <Button
+                  type="submit"
+                  loading={saving}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Creating Project...' : 'Create Project'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/admin/projects')}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* CSS Variables for Theming */
+:root {
+  /* Primary Colors */
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;
+  --color-primary-700: #1D4ED8;
+  --color-primary-800: #1E40AF;
+  --color-primary-900: #1E3A8A;
+
+  /* Role-based Colors */
+  --color-developer-50: #EFF6FF;
+  --color-developer-500: #3B82F6;
+  --color-developer-600: #2563EB;
+  --color-developer-700: #1D4ED8;
+
+  --color-agent-50: #F0FDF4;
+  --color-agent-500: #10B981;
+  --color-agent-600: #059669;
+  --color-agent-700: #047857;
+
+  --color-admin-50: #FEF2F2;
+  --color-admin-500: #EF4444;
+  --color-admin-600: #DC2626;
+  --color-admin-700: #B91C1C;
+
+  /* Semantic Colors */
+  --color-success-50: #F0FDF4;
+  --color-success-500: #10B981;
+  --color-success-600: #059669;
+
+  --color-warning-50: #FFFBEB;
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+
+  --color-error-50: #FEF2F2;
+  --color-error-500: #EF4444;
+  --color-error-600: #DC2626;
+
+  --color-info-50: #EFF6FF;
+  --color-info-500: #3B82F6;
+  --color-info-600: #2563EB;
+
+  /* Gray Scale */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #111827;
+
+  /* Status Colors */
+  --color-status-available: #10B981;
+  --color-status-held: #F59E0B;
+  --color-status-sold: #EF4444;
+  --color-status-reserved: #3B82F6;
+  --color-status-new: #8B5CF6;
+  --color-status-contacted: #3B82F6;
+  --color-status-qualified: #10B981;
+  --color-status-won: #059669;
+  --color-status-lost: #6B7280;
+
+  /* Typography */
+  --font-family-sans: 'Montserrat', system-ui, sans-serif;
+  --font-family-mono: ui-monospace, monospace;
+
+  /* Spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+
+  /* Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-base: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* Dark theme variables (for future implementation) */
+[data-theme="dark"] {
+  --color-primary-50: #1E3A8A;
+  --color-primary-100: #1E40AF;
+  --color-primary-200: #1D4ED8;
+  --color-primary-300: #2563EB;
+  --color-primary-400: #3B82F6;
+  --color-primary-500: #60A5FA;
+  --color-primary-600: #93C5FD;
+  --color-primary-700: #BFDBFE;
+  --color-primary-800: #DBEAFE;
+  --color-primary-900: #EFF6FF;
+
+  /* Add other dark theme color overrides as needed */
+}
+
+/* Base styles using CSS variables */
+body {
+  font-family: var(--font-family-sans);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+}
+
+/* Utility classes using CSS variables */
+.text-primary {
+  color: var(--color-primary-500);
+}
+
+.bg-primary {
+  background-color: var(--color-primary-500);
+}
+
+.border-primary {
+  border-color: var(--color-primary-500);
+}
+
+/* Role-based utility classes */
+.text-developer {
+  color: var(--color-developer-500);
+}
+
+.bg-developer {
+  background-color: var(--color-developer-500);
+}
+
+.text-agent {
+  color: var(--color-agent-500);
+}
+
+.bg-agent {
+  background-color: var(--color-agent-500);
+}
+
+.text-admin {
+  color: var(--color-admin-500);
+}
+
+.bg-admin {
+  background-color: var(--color-admin-500);
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.vanilla:hover {
+  filter: drop-shadow(0 0 2em #3178c6aa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
