@@ -17,7 +17,7 @@ export const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: '',
     organizationName: '',
-    organizationType: 'developer' as 'developer' | 'agent',
+    organizationType: 'developer' as 'developer' | 'agent' | 'admin',
     contactPhone: '',
     address: '',
     website: '',
@@ -29,6 +29,7 @@ export const RegisterPage: React.FC = () => {
   const organizationTypeOptions = [
     { value: 'developer', label: 'Developer' },
     { value: 'agent', label: 'Real Estate Agent' },
+    { value: 'admin', label: 'System Administrator' },
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -128,8 +129,11 @@ export const RegisterPage: React.FC = () => {
       // Generate employee code
       const employeeCode = `EMP-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
-      // Determine the employee role based on organization type
-      const employeeRole = formData.organizationType === 'developer' ? 'admin' : 'agent';
+      // Determine the employee role based on organization type (NEW THREE-ROLE SYSTEM)
+      const employeeRole = formData.organizationType === 'admin' ? 'admin' : 
+                          formData.organizationType === 'developer' ? 'developer' : 'agent';
+      const employeeRoleNew = formData.organizationType === 'admin' ? 'admin' : 
+                             formData.organizationType === 'developer' ? 'developer' : 'agent';
       
       console.log('Creating employee record with data:', {
         user_id: authData.user.id,
@@ -139,23 +143,53 @@ export const RegisterPage: React.FC = () => {
         last_name: formData.lastName,
         email: formData.email,
         role: employeeRole,
+        role_new: employeeRoleNew,
         status: 'active',
       });
       
-      const { data: empData, error: empError } = await supabase
-        .from('employees')
-        .insert({
-          user_id: authData.user.id,
-          organization_id: orgData.id,
-          employee_code: employeeCode, // Add required employee_code field
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          role: employeeRole,
-          status: 'active',
-        })
-        .select()
-        .single();
+      // Try to insert with role_new first, fallback to just role if column doesn't exist
+      let empData, empError;
+      
+      try {
+        const result = await supabase
+          .from('employees')
+          .insert({
+            user_id: authData.user.id,
+            organization_id: orgData.id,
+            employee_code: employeeCode,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            role: employeeRole,
+            role_new: employeeRoleNew, // Try with role_new
+            status: 'active',
+          })
+          .select()
+          .single();
+        
+        empData = result.data;
+        empError = result.error;
+      } catch (error) {
+        // If role_new column doesn't exist, try without it
+        console.log('role_new column might not exist, trying without it...');
+        const result = await supabase
+          .from('employees')
+          .insert({
+            user_id: authData.user.id,
+            organization_id: orgData.id,
+            employee_code: employeeCode,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            role: employeeRole,
+            status: 'active',
+          })
+          .select()
+          .single();
+        
+        empData = result.data;
+        empError = result.error;
+      }
 
       console.log('Employee creation result:', { empData, empError });
 

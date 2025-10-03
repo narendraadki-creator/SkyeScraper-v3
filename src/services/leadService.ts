@@ -43,6 +43,32 @@ export const leadService = {
       console.error('Lead creation error:', error);
       throw error;
     }
+
+    // Update the project's lead count
+    if (data && leadData.project_id) {
+      // First get the current lead count
+      const { data: project, error: fetchError } = await supabase
+        .from('projects')
+        .select('leads_count')
+        .eq('id', leadData.project_id)
+        .single();
+      
+      if (!fetchError && project) {
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update({ 
+            leads_count: (project.leads_count || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', leadData.project_id);
+        
+        if (updateError) {
+          console.error('Failed to update project lead count:', updateError);
+          // Don't throw error here as the lead was created successfully
+        }
+      }
+    }
+
     return data;
   },
 
@@ -179,6 +205,17 @@ export const leadService = {
 
     if (!employee) throw new Error('Employee not found');
 
+    // First, get the lead to find the project_id
+    const { data: lead, error: fetchError } = await supabase
+      .from('leads')
+      .select('project_id')
+      .eq('id', leadId)
+      .eq('organization_id', employee.organization_id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Delete the lead
     const { error } = await supabase
       .from('leads')
       .delete()
@@ -186,6 +223,31 @@ export const leadService = {
       .eq('organization_id', employee.organization_id);
 
     if (error) throw error;
+
+    // Decrement the project's lead count
+    if (lead && lead.project_id) {
+      // First get the current lead count
+      const { data: project, error: fetchError } = await supabase
+        .from('projects')
+        .select('leads_count')
+        .eq('id', lead.project_id)
+        .single();
+      
+      if (!fetchError && project) {
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update({ 
+            leads_count: Math.max((project.leads_count || 0) - 1, 0),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', lead.project_id);
+        
+        if (updateError) {
+          console.error('Failed to update project lead count:', updateError);
+          // Don't throw error here as the lead was deleted successfully
+        }
+      }
+    }
   },
 
   async getLeadStats(): Promise<{

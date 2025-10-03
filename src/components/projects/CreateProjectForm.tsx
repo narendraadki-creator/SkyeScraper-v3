@@ -1,7 +1,7 @@
 // Manual project creation form component
 // Follows unified architecture - same form for all creation methods
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -14,30 +14,41 @@ import type { CreateProjectData } from '../../types/project';
 interface CreateProjectFormProps {
   onSubmit: (data: CreateProjectData) => Promise<void>;
   loading?: boolean;
+  initialData?: CreateProjectData;
+  isEditMode?: boolean;
 }
 
 export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   onSubmit,
   loading = false,
+  initialData,
+  isEditMode = false,
 }) => {
-  const [formData, setFormData] = useState<CreateProjectData>({
-    creation_method: 'manual',
-    name: '',
-    location: '',
-    project_type: '',
-    description: '',
-    developer_name: '',
-    address: '',
-    starting_price: undefined,
-    total_units: undefined,
-    completion_date: '',
-    handover_date: '',
-    amenities: [],
-    connectivity: [],
-    landmarks: [],
-    payment_plans: [],
-    custom_attributes: {},
-    is_featured: false,
+  // Initialize form data only once - never reset it
+  const [formData, setFormData] = useState<CreateProjectData>(() => {
+    if (initialData) {
+      return initialData;
+    }
+    return {
+      creation_method: 'manual',
+      name: '',
+      location: '',
+      project_type: '',
+      status: 'published',
+      description: '',
+      developer_name: '',
+      address: '',
+      starting_price: undefined,
+      total_units: undefined,
+      completion_date: '',
+      handover_date: '',
+      amenities: [],
+      connectivity: [],
+      landmarks: [],
+      payment_plans: [],
+      custom_attributes: {},
+      is_featured: false,
+    };
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +56,8 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   const [newConnectivity, setNewConnectivity] = useState('');
   const [newLandmark, setNewLandmark] = useState({ name: '', distance: '' });
   const [newPaymentPlan, setNewPaymentPlan] = useState({ name: '', description: '', terms: '' });
+
+  // NO useEffect for form data - it's initialized once and never reset
 
   const projectTypeOptions = [
     { value: 'Apartment', label: 'Apartment' },
@@ -92,88 +105,78 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('=== FORM SUBMIT CLICKED ===');
     e.preventDefault();
+    console.log('Form submit triggered!');
     
-    console.log('Validating form...');
     const isValid = validateForm();
     console.log('Form validation result:', isValid);
-    console.log('Current errors:', errors);
+    console.log('Form errors:', errors);
+    console.log('Form data being submitted:', formData);
     
     if (!isValid) {
       console.log('Form validation failed, not submitting');
       return;
     }
 
+    console.log('Form validation passed, calling onSubmit...');
     try {
-      console.log('=== FORM SUBMISSION DEBUG ===');
-      console.log('Form data being submitted:', formData);
-      console.log('Amenities array length:', formData.amenities?.length);
-      console.log('Amenities:', formData.amenities);
-      console.log('Connectivity array length:', formData.connectivity?.length);
-      console.log('Connectivity:', formData.connectivity);
-      console.log('Landmarks array length:', formData.landmarks?.length);
-      console.log('Landmarks:', formData.landmarks);
-      console.log('Payment Plans array length:', formData.payment_plans?.length);
-      console.log('Payment Plans:', formData.payment_plans);
-      console.log('=== END FORM SUBMISSION DEBUG ===');
       await onSubmit(formData);
+      console.log('Form submission completed successfully');
     } catch (error) {
       console.error('Form submission error:', error);
     }
   };
 
-  const addAmenity = () => {
-    console.log('addAmenity called with:', newAmenity);
+  const addAmenity = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (newAmenity.trim()) {
-      console.log('Adding amenity:', newAmenity.trim());
-      setFormData(prev => {
-        const newAmenities = [...(prev.amenities || []), newAmenity.trim()];
-        console.log('New amenities array:', newAmenities);
-        return {
-          ...prev,
-          amenities: newAmenities
-        };
-      });
+      setFormData(prev => ({
+        ...prev,
+        amenities: [...(prev.amenities || []), newAmenity.trim()]
+      }));
       setNewAmenity('');
-    } else {
-      console.log('Amenity is empty, not adding');
     }
   };
 
-  const removeAmenity = (index: number) => {
+  const removeAmenity = (index: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     setFormData(prev => ({
       ...prev,
       amenities: prev.amenities?.filter((_, i) => i !== index) || []
     }));
   };
 
-  const addConnectivity = () => {
-    console.log('addConnectivity called with:', newConnectivity);
+  const addConnectivity = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (newConnectivity.trim()) {
-      console.log('Adding connectivity:', newConnectivity.trim());
-      setFormData(prev => {
-        const newConnectivityArray = [...(prev.connectivity || []), newConnectivity.trim()];
-        console.log('New connectivity array:', newConnectivityArray);
-        return {
-          ...prev,
-          connectivity: newConnectivityArray
-        };
-      });
+      setFormData(prev => ({
+        ...prev,
+        connectivity: [...(prev.connectivity || []), newConnectivity.trim()]
+      }));
       setNewConnectivity('');
-    } else {
-      console.log('Connectivity is empty, not adding');
     }
   };
 
-  const removeConnectivity = (index: number) => {
+  const removeConnectivity = (index: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     setFormData(prev => ({
       ...prev,
       connectivity: prev.connectivity?.filter((_, i) => i !== index) || []
     }));
   };
 
-  const addLandmark = () => {
+  const addLandmark = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (newLandmark.name.trim() && newLandmark.distance.trim()) {
       setFormData(prev => ({
         ...prev,
@@ -183,34 +186,33 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
     }
   };
 
-  const removeLandmark = (index: number) => {
+  const removeLandmark = (index: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     setFormData(prev => ({
       ...prev,
       landmarks: prev.landmarks?.filter((_, i) => i !== index) || []
     }));
   };
 
-  const addPaymentPlan = () => {
-    console.log('addPaymentPlan called with:', newPaymentPlan);
+  const addPaymentPlan = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (newPaymentPlan.name.trim() && newPaymentPlan.terms.trim()) {
-      console.log('Adding payment plan:', newPaymentPlan);
-      setFormData(prev => {
-        const newPaymentPlansArray = [...(prev.payment_plans || []), { ...newPaymentPlan }];
-        console.log('New payment plans array:', newPaymentPlansArray);
-        return {
-          ...prev,
-          payment_plans: newPaymentPlansArray
-        };
-      });
+      setFormData(prev => ({
+        ...prev,
+        payment_plans: [...(prev.payment_plans || []), { ...newPaymentPlan }]
+      }));
       setNewPaymentPlan({ name: '', description: '', terms: '' });
-    } else {
-      console.log('Payment plan is missing required fields, not adding');
-      console.log('Name:', newPaymentPlan.name.trim());
-      console.log('Terms:', newPaymentPlan.terms.trim());
     }
   };
 
-  const removePaymentPlan = (index: number) => {
+  const removePaymentPlan = (index: number, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     setFormData(prev => ({
       ...prev,
       payment_plans: prev.payment_plans?.filter((_, i) => i !== index) || []
@@ -273,6 +275,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
               />
             </div>
           </div>
+
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -378,28 +381,25 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
               value={newAmenity}
               onChange={(e) => setNewAmenity(e.target.value)}
               placeholder="Add amenity"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity(e))}
             />
-            <Button type="button" onClick={addAmenity} variant="outline">
+            <Button type="button" onClick={(e) => addAmenity(e)} variant="outline">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {formData.amenities?.map((amenity, index) => {
-              console.log('Rendering amenity:', amenity, 'at index:', index);
-              return (
-                <Badge key={index} variant="default" className="flex items-center gap-1">
-                  {amenity}
-                  <button
-                    type="button"
-                    onClick={() => removeAmenity(index)}
-                    className="ml-1 hover:text-red-500"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              );
-            })}
+            {formData.amenities?.map((amenity, index) => (
+              <Badge key={index} variant="default" className="flex items-center gap-1">
+                {amenity}
+                <button
+                  type="button"
+                  onClick={(e) => removeAmenity(index, e)}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -415,9 +415,9 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
               value={newConnectivity}
               onChange={(e) => setNewConnectivity(e.target.value)}
               placeholder="Add connectivity (e.g., Metro 500m)"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addConnectivity())}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addConnectivity(e))}
             />
-            <Button type="button" onClick={addConnectivity} variant="outline">
+            <Button type="button" onClick={(e) => addConnectivity(e)} variant="outline">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
@@ -427,7 +427,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                 {item}
                 <button
                   type="button"
-                  onClick={() => removeConnectivity(index)}
+                  onClick={(e) => removeConnectivity(index, e)}
                   className="ml-1 hover:text-red-500"
                 >
                   <X className="w-3 h-3" />
@@ -455,7 +455,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
               onChange={(e) => setNewLandmark(prev => ({ ...prev, distance: e.target.value }))}
               placeholder="Distance (e.g., 5km)"
             />
-            <Button type="button" onClick={addLandmark} variant="outline">
+            <Button type="button" onClick={(e) => addLandmark(e)} variant="outline">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
@@ -467,7 +467,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                 </span>
                 <button
                   type="button"
-                  onClick={() => removeLandmark(index)}
+                  onClick={(e) => removeLandmark(index, e)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <X className="w-4 h-4" />
@@ -501,7 +501,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
               placeholder="Terms and conditions"
               rows={2}
             />
-            <Button type="button" onClick={addPaymentPlan} variant="outline">
+            <Button type="button" onClick={(e) => addPaymentPlan(e)} variant="outline">
               <Plus className="w-4 h-4 mr-2" />
               Add Payment Plan
             </Button>
@@ -519,7 +519,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => removePaymentPlan(index)}
+                    onClick={(e) => removePaymentPlan(index, e)}
                     className="text-red-500 hover:text-red-700 ml-2"
                   >
                     <X className="w-4 h-4" />
@@ -534,109 +534,12 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
       {/* Submit Button */}
       <div className="flex justify-end space-x-4">
         <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            console.log('Current form data:', formData);
-            console.log('Amenities:', formData.amenities);
-            console.log('Connectivity:', formData.connectivity);
-            console.log('Landmarks:', formData.landmarks);
-            console.log('Payment Plans:', formData.payment_plans);
-          }}
-        >
-          Debug Form Data
-        </Button>
-        
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            console.log('Testing addAmenity function...');
-            // Directly call addAmenity with a test value
-            const testAmenity = 'Test Amenity';
-            console.log('addAmenity called with:', testAmenity);
-            if (testAmenity.trim()) {
-              console.log('Adding amenity:', testAmenity.trim());
-              setFormData(prev => {
-                const newAmenities = [...(prev.amenities || []), testAmenity.trim()];
-                console.log('New amenities array:', newAmenities);
-                return {
-                  ...prev,
-                  amenities: newAmenities
-                };
-              });
-            }
-          }}
-        >
-          Test Add Amenity
-        </Button>
-        
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            console.log('Testing manual amenity input...');
-            setNewAmenity('Manual Test Amenity');
-            console.log('Set newAmenity to: Manual Test Amenity');
-            console.log('Current newAmenity state:', newAmenity);
-          }}
-        >
-          Set Manual Input
-        </Button>
-        
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            console.log('Testing addConnectivity function...');
-            const testConnectivity = 'Test Connectivity';
-            console.log('addConnectivity called with:', testConnectivity);
-            if (testConnectivity.trim()) {
-              console.log('Adding connectivity:', testConnectivity.trim());
-              setFormData(prev => {
-                const newConnectivityArray = [...(prev.connectivity || []), testConnectivity.trim()];
-                console.log('New connectivity array:', newConnectivityArray);
-                return {
-                  ...prev,
-                  connectivity: newConnectivityArray
-                };
-              });
-            }
-          }}
-        >
-          Test Add Connectivity
-        </Button>
-        
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            console.log('Testing addPaymentPlan function...');
-            const testPaymentPlan = { name: 'Test Plan', description: 'Test Description', terms: 'Test Terms' };
-            console.log('addPaymentPlan called with:', testPaymentPlan);
-            if (testPaymentPlan.name.trim() && testPaymentPlan.terms.trim()) {
-              console.log('Adding payment plan:', testPaymentPlan);
-              setFormData(prev => {
-                const newPaymentPlansArray = [...(prev.payment_plans || []), { ...testPaymentPlan }];
-                console.log('New payment plans array:', newPaymentPlansArray);
-                return {
-                  ...prev,
-                  payment_plans: newPaymentPlansArray
-                };
-              });
-            }
-          }}
-        >
-          Test Add Payment Plan
-        </Button>
-        <Button 
           type="submit" 
           loading={loading} 
           disabled={loading}
-          onClick={() => console.log('Create Project button clicked!')}
         >
           <Save className="w-4 h-4 mr-2" />
-          Create Project
+          {isEditMode ? 'Save Project' : 'Create Project'}
         </Button>
       </div>
     </form>

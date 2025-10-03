@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input';
 import { SimpleSelect } from '../components/ui/SimpleSelect';
 import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { adminService } from '../services/adminService';
 import { useAuth } from '../contexts/AuthContext';
 import type { AdminProject, AdminProjectFilters } from '../types/admin';
@@ -22,6 +23,7 @@ import {
   Plus,
   Edit,
   Trash2,
+  Archive,
   MoreVertical,
   AlertTriangle,
   TrendingUp,
@@ -36,10 +38,31 @@ export const AdminProjectsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminProjectFilters>({});
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Confirmation dialog states
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'archive';
+    projectId: string | null;
+    projectName: string;
+    action?: 'archive' | 'unarchive';
+  }>({
+    isOpen: false,
+    type: 'delete',
+    projectId: null,
+    projectName: '',
+  });
 
   useEffect(() => {
     if (role !== 'admin') {
-      navigate('/dashboard');
+      // Redirect non-admins to their appropriate dashboard
+      if (role === 'developer') {
+        navigate('/developer');
+      } else if (role === 'agent') {
+        navigate('/agent-projects');
+      } else {
+        navigate('/developer'); // fallback
+      }
       return;
     }
     loadProjects();
@@ -71,18 +94,73 @@ export const AdminProjectsPage: React.FC = () => {
     }));
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteProject = (projectId: string, projectName: string) => {
+    console.log('Delete button clicked for project:', projectId, projectName);
+    setConfirmDialog({
+      isOpen: true,
+      type: 'delete',
+      projectId,
+      projectName,
+    });
+  };
+
+  const handleArchiveProject = (projectId: string, projectName: string, currentStatus: string) => {
+    const isArchived = currentStatus === 'archived';
+    const action = isArchived ? 'unarchive' : 'archive';
+    
+    console.log(`${action} button clicked for project:`, projectId, projectName);
+    setConfirmDialog({
+      isOpen: true,
+      type: 'archive',
+      projectId,
+      projectName,
+      action,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog.projectId) return;
+
+    console.log('Confirming action:', confirmDialog.type, 'for project:', confirmDialog.projectId);
 
     try {
-      // Note: This would need to be implemented in the adminService
-      // await adminService.deleteProject(projectId);
+      if (confirmDialog.type === 'delete') {
+        console.log('Deleting project...');
+        await adminService.deleteProject(confirmDialog.projectId);
+        console.log('Project deleted successfully');
+      } else if (confirmDialog.type === 'archive') {
+        const action = confirmDialog.action || 'archive';
+        const newStatus = action === 'archive' ? 'archived' : 'published';
+        
+        console.log(`${action}ing project...`);
+        await adminService.updateProject(confirmDialog.projectId, { status: newStatus } as any);
+        console.log(`Project ${action}d successfully`);
+      }
+      
+      // Reload projects
+      console.log('Reloading projects...');
       await loadProjects();
+      
+      // Close dialog
+      setConfirmDialog({
+        isOpen: false,
+        type: 'delete',
+        projectId: null,
+        projectName: '',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete project');
+      console.error('Action failed:', err);
+      setError(err instanceof Error ? err.message : `Failed to ${confirmDialog.type} project`);
     }
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({
+      isOpen: false,
+      type: 'delete',
+      projectId: null,
+      projectName: '',
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -357,6 +435,8 @@ export const AdminProjectsPage: React.FC = () => {
                       size="sm" 
                       className="flex-1"
                       onClick={() => navigate(`/admin/projects/${project.id}/edit`)}
+                      disabled={project.status === 'archived'}
+                      title={project.status === 'archived' ? 'Cannot edit archived projects' : 'Edit Project'}
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
@@ -364,8 +444,18 @@ export const AdminProjectsPage: React.FC = () => {
                     <Button 
                       variant="outline" 
                       size="sm" 
+                      className={project.status === 'archived' ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}
+                      onClick={() => handleArchiveProject(project.id, project.name, project.status)}
+                      title={project.status === 'archived' ? 'Unarchive Project' : 'Archive Project'}
+                    >
+                      <Archive className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
                       className="text-red-600 hover:text-red-700"
-                      onClick={() => handleDeleteProject(project.id)}
+                      onClick={() => handleDeleteProject(project.id, project.name)}
+                      title="Delete Project"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -414,6 +504,24 @@ export const AdminProjectsPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={handleCloseDialog}
+          onConfirm={handleConfirmAction}
+          title={confirmDialog.type === 'delete' ? 'Delete Project' : (confirmDialog.action === 'unarchive' ? 'Unarchive Project' : 'Archive Project')}
+          message={
+            confirmDialog.type === 'delete'
+              ? `Are you sure you want to delete "${confirmDialog.projectName}"? This action cannot be undone.`
+              : confirmDialog.action === 'unarchive'
+              ? `Are you sure you want to unarchive "${confirmDialog.projectName}"? It will be visible to agents again.`
+              : `Are you sure you want to archive "${confirmDialog.projectName}"? It will be hidden from agents but can be restored later.`
+          }
+          confirmText={confirmDialog.type === 'delete' ? 'Delete' : (confirmDialog.action === 'unarchive' ? 'Unarchive' : 'Archive')}
+          cancelText="Cancel"
+          type={confirmDialog.type === 'delete' ? 'danger' : 'warning'}
+        />
       </div>
     </div>
   );

@@ -8,14 +8,15 @@ import { Select } from '../components/ui/Select';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { projectService } from '../services/projectService';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Search, Filter, Eye, Edit, Trash2, Calendar, MapPin, DollarSign, Users } from 'lucide-react';
-import type { Project, ProjectFilters, ProjectListResponse } from '../types/project';
+import { Plus, Search, Filter, Eye, Edit, Trash2, Archive, Calendar, MapPin, DollarSign, Users } from 'lucide-react';
+import type { Project, ProjectFilters } from '../types/project';
 
 export const ProjectsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, employeeId, organizationId, role } = useAuth();
+  const { role } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,20 @@ export const ProjectsPage: React.FC = () => {
     total: 0,
     total_pages: 0,
     current_page: 1,
+  });
+  
+  // Confirmation dialog states
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'archive';
+    projectId: string | null;
+    projectName: string;
+    action?: 'archive' | 'unarchive';
+  }>({
+    isOpen: false,
+    type: 'delete',
+    projectId: null,
+    projectName: '',
   });
 
   const statusOptions = [
@@ -78,6 +93,17 @@ export const ProjectsPage: React.FC = () => {
     loadProjects();
   }, [filters]);
 
+  // Refresh projects when user returns to the page (e.g., after creating a lead)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadProjects();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+
   const handleFilterChange = (key: keyof ProjectFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -90,25 +116,65 @@ export const ProjectsPage: React.FC = () => {
     setFilters(prev => ({ ...prev, page }));
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) {
-      return;
-    }
+  const handleDeleteProject = (projectId: string, projectName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'delete',
+      projectId,
+      projectName,
+    });
+  };
+
+  const handleArchiveProject = (projectId: string, projectName: string, currentStatus: string) => {
+    const isArchived = currentStatus === 'archived';
+    const action = isArchived ? 'unarchive' : 'archive';
+    
+    setConfirmDialog({
+      isOpen: true,
+      type: 'archive',
+      projectId,
+      projectName,
+      action,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog.projectId) return;
 
     try {
-      const result = await projectService.deleteProject(projectId);
-      
-      if (result.error) {
-        setError(result.error.message);
-        return;
+      if (confirmDialog.type === 'delete') {
+        await projectService.deleteProject(confirmDialog.projectId);
+      } else if (confirmDialog.type === 'archive') {
+        const action = confirmDialog.action || 'archive';
+        const newStatus = action === 'archive' ? 'archived' : 'published';
+        await projectService.updateProject(confirmDialog.projectId, { status: newStatus } as any);
       }
-
+      
       // Reload projects
       await loadProjects();
+      
+      // Close dialog
+      setConfirmDialog({
+        isOpen: false,
+        type: 'delete',
+        projectId: null,
+        projectName: '',
+      });
     } catch (err) {
-      setError('Failed to delete project');
+      console.error('Action failed:', err);
+      setError(`Failed to ${confirmDialog.type} project`);
     }
   };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({
+      isOpen: false,
+      type: 'delete',
+      projectId: null,
+      projectName: '',
+    });
+  };
+
 
   const getCreationMethodBadge = (method: string) => {
     const variants = {
@@ -315,6 +381,18 @@ export const ProjectsPage: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Engagement Metrics */}
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      <span>{project.views_count || 0} views</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      <span>{project.leads_count || 0} leads</span>
+                    </div>
+                  </div>
+
                   {project.amenities && project.amenities.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-gray-500 mb-1">Amenities</p>
@@ -342,26 +420,44 @@ export const ProjectsPage: React.FC = () => {
                     </div>
                     <div className="flex gap-1">
                       <Button
+                        type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => navigate(`/projects/${project.id}`)}
+                        title="View Project Details"
                       >
                         <Eye className="w-3 h-3" />
                       </Button>
                       {role !== 'agent' && (
                         <>
                           <Button
+                            type="button"
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/projects/${project.id}/edit`)}
+                            disabled={project.status === 'archived'}
+                            title={project.status === 'archived' ? 'Cannot edit archived projects' : 'Edit Project'}
+                            className={project.status === 'archived' ? 'opacity-50 cursor-not-allowed' : ''}
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
                           <Button
+                            type="button"
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDeleteProject(project.id)}
+                            onClick={() => handleArchiveProject(project.id, project.name, project.status)}
+                            className={project.status === 'archived' ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}
+                            title={project.status === 'archived' ? 'Unarchive Project' : 'Archive Project'}
+                          >
+                            <Archive className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteProject(project.id, project.name)}
                             className="text-red-600 hover:text-red-700"
+                            title="Delete Project"
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
@@ -408,6 +504,24 @@ export const ProjectsPage: React.FC = () => {
             <Loading size="lg" text="Loading..." />
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={handleCloseDialog}
+          onConfirm={handleConfirmAction}
+          title={confirmDialog.type === 'delete' ? 'Delete Project' : (confirmDialog.action === 'unarchive' ? 'Unarchive Project' : 'Archive Project')}
+          message={
+            confirmDialog.type === 'delete'
+              ? `Are you sure you want to delete "${confirmDialog.projectName}"? This action cannot be undone.`
+              : confirmDialog.action === 'unarchive'
+              ? `Are you sure you want to unarchive "${confirmDialog.projectName}"? It will be visible to agents again.`
+              : `Are you sure you want to archive "${confirmDialog.projectName}"? It will be hidden from agents but can be restored later.`
+          }
+          confirmText={confirmDialog.type === 'delete' ? 'Delete' : (confirmDialog.action === 'unarchive' ? 'Unarchive' : 'Archive')}
+          cancelText="Cancel"
+          type={confirmDialog.type === 'delete' ? 'danger' : 'warning'}
+        />
       </div>
     </div>
   );

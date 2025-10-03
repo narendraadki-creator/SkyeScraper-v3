@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import type { UserRole } from '../contexts/AuthContext';
 import type { 
   Unit, 
   UnitImport, 
@@ -15,6 +16,25 @@ import type {
 } from '../types/unit';
 import { STANDARD_COLUMN_MAPPINGS } from '../types/unit';
 
+// Helper function to get user role with new three-role system
+const getUserRole = (employee: { role: string; role_new?: string | null }): UserRole => {
+  // Use role_new if available, fallback to role for backward compatibility
+  const role = employee.role_new || employee.role;
+  
+  // Validate and return typed role
+  if (role === 'admin' || role === 'developer' || role === 'agent') {
+    return role as UserRole;
+  }
+  
+  // Legacy role mapping for backward compatibility
+  if (role === 'manager' || role === 'staff') {
+    return 'developer'; // Legacy roles become developers
+  }
+  
+  console.warn('Unknown role:', role, 'defaulting to developer');
+  return 'developer'; // Safe fallback
+};
+
 export const unitService = {
   // Get units for a project
   async getUnits(projectId: string, filters?: UnitFilters): Promise<Unit[]> {
@@ -23,11 +43,13 @@ export const unitService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
+
+    const userRole = getUserRole(employee);
 
     let query = supabase
       .from('units')
@@ -37,12 +59,15 @@ export const unitService = {
       `)
       .eq('project_id', projectId);
 
-    // Filter based on role:
-    // - Developers: can only see units from their own organization's projects
+    // Filter based on NEW three-role system:
     // - Agents: can see units from published projects from any organization
-    if (employee.role === 'agent') {
+    // - Developers: can only see units from their own organization's projects
+    // - Admins: can see units from all projects system-wide
+    if (userRole === 'agent') {
       query = query.eq('projects.status', 'published');
-    } else {
+    } else if (userRole === 'admin') {
+      // System admin can see all units - no filter needed
+    } else { // userRole === 'developer'
       query = query.eq('projects.organization_id', employee.organization_id);
     }
 
@@ -89,11 +114,13 @@ export const unitService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
+
+    const userRole = getUserRole(employee);
 
     let query = supabase
       .from('units')
@@ -103,12 +130,15 @@ export const unitService = {
       `)
       .eq('id', unitId);
 
-    // Filter based on role:
-    // - Developers: can only see units from their own organization's projects
+    // Filter based on NEW three-role system:
     // - Agents: can see units from published projects from any organization
-    if (employee.role === 'agent') {
+    // - Developers: can only see units from their own organization's projects
+    // - Admins: can see units from all projects system-wide
+    if (userRole === 'agent') {
       query = query.eq('projects.status', 'published');
-    } else {
+    } else if (userRole === 'admin') {
+      // System admin can see all units - no filter needed
+    } else { // userRole === 'developer'
       query = query.eq('projects.organization_id', employee.organization_id);
     }
 

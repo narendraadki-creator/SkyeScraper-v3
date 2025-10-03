@@ -26,27 +26,32 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
   initialData,
 }) => {
   console.log('LeadCaptureForm props:', { projectId, unitId, initialData });
-  const [formData, setFormData] = useState<CreateLeadData>({
-    project_id: projectId,
-    unit_id: unitId,
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    source: 'Website Inquiry',
-    budget_min: undefined,
-    budget_max: undefined,
-    preferred_unit_types: [],
-    preferred_location: '',
-    requirements: '',
-    notes: '',
-    next_followup: '',
-    ...initialData,
+  const [formData, setFormData] = useState<CreateLeadData>(() => {
+    const initialFormData = {
+      project_id: projectId,
+      unit_id: unitId,
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      source: 'Website Inquiry',
+      budget_min: undefined,
+      budget_max: undefined,
+      preferred_unit_types: [],
+      preferred_location: '',
+      requirements: '',
+      notes: '',
+      next_followup: '',
+      ...initialData,
+    };
+    console.log('Initial form data:', initialFormData);
+    return initialFormData;
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [teamMembers, setTeamMembers] = useState<Array<{ id: string; name: string; email: string }>>([]);
+
 
   // Update formData when projectId changes
   useEffect(() => {
@@ -97,7 +102,6 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    console.log('Validating form data:', formData);
 
     if (!formData.first_name.trim()) {
       newErrors.first_name = 'First name is required';
@@ -111,8 +115,15 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    if (formData.budget_min && formData.budget_max && formData.budget_min > formData.budget_max) {
-      newErrors.budget_max = 'Maximum budget must be greater than minimum budget';
+    // Only validate budget comparison if both values are provided and are valid numbers
+    const minBudget = Number(formData.budget_min);
+    const maxBudget = Number(formData.budget_max);
+    
+    // Only validate if both values are valid numbers greater than 0
+    if (!isNaN(minBudget) && !isNaN(maxBudget) && minBudget > 0 && maxBudget > 0) {
+      if (minBudget > maxBudget) {
+        newErrors.budget_max = 'Maximum budget must be greater than minimum budget';
+      }
     }
 
     console.log('Validation errors:', newErrors);

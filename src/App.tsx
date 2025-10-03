@@ -9,6 +9,7 @@ import { SimpleTestPage } from './pages/SimpleTestPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { CreateProjectPage } from './pages/CreateProjectPage';
 import { ProjectDetailsPage } from './pages/ProjectDetailsPage';
+import { ProjectEditPage } from './pages/ProjectEditPage';
 import { UnitsPage } from './pages/UnitsPage';
 import { UnitDetailsPage } from './pages/UnitDetailsPage';
 import { LeadsPage } from './pages/LeadsPage';
@@ -18,6 +19,7 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminOrganizationsPage } from './pages/AdminOrganizationsPage';
 import { AdminOrganizationDetailsPage } from './pages/AdminOrganizationDetailsPage';
 import { AdminOrganizationEditPage } from './pages/AdminOrganizationEditPage';
+import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
 import { AdminProjectsPage } from './pages/AdminProjectsPage';
 import { AdminCreateProjectPage } from './pages/AdminCreateProjectPage';
 import { AdminProjectEditPage } from './pages/AdminProjectEditPage';
@@ -44,11 +46,11 @@ const AuthRouter: React.FC = () => {
       {/* Public routes */}
       <Route 
         path="/login" 
-        element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
+        element={user ? <RoleBasedRedirect /> : <LoginPage />} 
       />
       <Route 
         path="/register" 
-        element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} 
+        element={user ? <RoleBasedRedirect /> : <RegisterPage />} 
       />
       <Route 
         path="/auth-test" 
@@ -65,6 +67,10 @@ const AuthRouter: React.FC = () => {
         element={user ? <DashboardPage /> : <Navigate to="/login" replace />} 
       />
       <Route 
+        path="/developer" 
+        element={user ? <DashboardPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
         path="/projects" 
         element={user ? <ProjectsPage /> : <Navigate to="/login" replace />} 
       />
@@ -75,6 +81,10 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/projects/:id" 
         element={user ? <ProjectDetailsPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/projects/:id/edit" 
+        element={user ? <ProjectEditPage /> : <Navigate to="/login" replace />} 
       />
       <Route 
         path="/projects/:projectId/units" 
@@ -147,13 +157,13 @@ const AuthRouter: React.FC = () => {
       {/* Default redirect */}
       <Route 
         path="/" 
-        element={<Navigate to={user ? "/dashboard" : "/login"} replace />} 
+        element={user ? <RoleBasedRedirect /> : <Navigate to="/login" replace />} 
       />
       
       {/* Catch all route */}
       <Route 
         path="*" 
-        element={<Navigate to={user ? "/dashboard" : "/login"} replace />} 
+        element={user ? <RoleBasedRedirect /> : <Navigate to="/login" replace />} 
       />
     </Routes>
   );

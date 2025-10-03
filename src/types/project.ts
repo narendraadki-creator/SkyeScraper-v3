@@ -76,6 +76,7 @@ export interface CreateProjectData {
   name: string;
   location: string;
   project_type?: string;
+  status?: ProjectStatus;
   description?: string;
   developer_name?: string;
   address?: string;

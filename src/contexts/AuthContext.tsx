@@ -3,12 +3,21 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
+// Three-role system types
+export type UserRole = 'admin' | 'developer' | 'agent';
+
 interface AuthContextType {
   user: User | null;
   employeeId: string | null;
   organizationId: string | null;
-  role: string | null;
+  role: UserRole | null;
   loading: boolean;
+  // Helper functions for role checking
+  isAdmin: boolean;
+  isDeveloper: boolean;
+  isAgent: boolean;
+  canManageProjects: boolean;
+  canViewAllProjects: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,14 +26,26 @@ const AuthContext = createContext<AuthContextType>({
   organizationId: null,
   role: null,
   loading: true,
+  isAdmin: false,
+  isDeveloper: false,
+  isAgent: false,
+  canManageProjects: false,
+  canViewAllProjects: false,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Computed role-based properties
+  const isAdmin = role === 'admin';
+  const isDeveloper = role === 'developer';
+  const isAgent = role === 'agent';
+  const canManageProjects = isAdmin || isDeveloper;
+  const canViewAllProjects = isAdmin;
 
   useEffect(() => {
     // Get initial session
@@ -58,20 +79,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchEmployeeData = async (userId: string) => {
     try {
-      console.log('Fetching employee data for user:', userId);
-      const { data, error } = await supabase
-        .from('employees')
-        .select('id, organization_id, role')
-        .eq('user_id', userId)
-        .single();
-
-      console.log('Employee fetch result:', { data, error });
+      // Try to select with role_new first, fallback to just role if column doesn't exist
+      let data, error;
+      
+      try {
+        const result = await supabase
+          .from('employees')
+          .select('id, organization_id, role, role_new')
+          .eq('user_id', userId)
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      } catch (err) {
+        // If role_new column doesn't exist, try without it
+        const result = await supabase
+          .from('employees')
+          .select('id, organization_id, role')
+          .eq('user_id', userId)
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) {
-        console.error('Employee fetch error:', error);
         // If it's a "no rows" error, that's expected during registration
         if (error.code === 'PGRST116') {
-          console.log('No employee record found yet - user may be in registration process');
+          // No employee record found yet - user may be in registration process
         }
         // Don't fail - just set loading to false
         setLoading(false);
@@ -79,12 +114,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
-        console.log('Setting employee data:', data);
         setEmployeeId(data.id);
         setOrganizationId(data.organization_id);
-        setRole(data.role);
-      } else {
-        console.log('No employee data found for user:', userId);
+        
+        // Use role_new if available, fallback to role for backward compatibility
+        const userRole = data.role_new || data.role;
+        
+        // Validate and set role with type safety
+        // Handle both old and new role systems
+        if (userRole === 'admin') {
+          setRole('admin');
+        } else if (userRole === 'developer') {
+          setRole('developer');
+        } else if (userRole === 'agent') {
+          setRole('agent');
+        } else if (userRole === 'manager' || userRole === 'staff') {
+          // Legacy roles map to developer
+          setRole('developer');
+        } else {
+          setRole('developer'); // Safe fallback
+        }
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -94,7 +143,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, employeeId, organizationId, role, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      employeeId, 
+      organizationId, 
+      role, 
+      loading,
+      isAdmin,
+      isDeveloper,
+      isAgent,
+      canManageProjects,
+      canViewAllProjects
+    }}>
       {children}
     </AuthContext.Provider>
   );

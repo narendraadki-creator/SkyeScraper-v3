@@ -12,6 +12,16 @@ const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
   const { user, employeeId, organizationId, role } = useAuth();
 
+  // Redirect users to role-specific dashboards
+  React.useEffect(() => {
+    if (role === 'admin') {
+      navigate('/admin', { replace: true });
+    } else if (role === 'developer' && window.location.pathname === '/dashboard') {
+      // Redirect developers from old /dashboard URL to new /developer URL
+      navigate('/developer', { replace: true });
+    }
+  }, [role, navigate]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };

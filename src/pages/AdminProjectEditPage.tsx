@@ -56,12 +56,19 @@ export const AdminProjectEditPage: React.FC = () => {
   // Dynamic array fields
   const [newAmenity, setNewAmenity] = useState('');
   const [newConnectivity, setNewConnectivity] = useState('');
-  const [newLandmark, setNewLandmark] = useState('');
-  const [newPaymentPlan, setNewPaymentPlan] = useState('');
+  const [newLandmark, setNewLandmark] = useState({ name: '', distance: '' });
+  const [newPaymentPlan, setNewPaymentPlan] = useState({ name: '', description: '', terms: '' });
 
   useEffect(() => {
     if (role !== 'admin') {
-      navigate('/dashboard');
+      // Redirect non-admins to their appropriate dashboard
+      if (role === 'developer') {
+        navigate('/developer');
+      } else if (role === 'agent') {
+        navigate('/agent-projects');
+      } else {
+        navigate('/developer'); // fallback
+      }
       return;
     }
     if (projectId) {
@@ -114,8 +121,8 @@ export const AdminProjectEditPage: React.FC = () => {
       switch (field) {
         case 'amenities': setNewAmenity(''); break;
         case 'connectivity': setNewConnectivity(''); break;
-        case 'landmarks': setNewLandmark(''); break;
-        case 'payment_plans': setNewPaymentPlan(''); break;
+        case 'landmarks': setNewLandmark({ name: '', distance: '' }); break;
+        case 'payment_plans': setNewPaymentPlan({ name: '', description: '', terms: '' }); break;
       }
     }
   };
@@ -124,6 +131,40 @@ export const AdminProjectEditPage: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       [field]: prev[field]?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const addLandmark = () => {
+    if (newLandmark.name.trim() && newLandmark.distance.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        landmarks: [...(prev.landmarks || []), { ...newLandmark }]
+      }));
+      setNewLandmark({ name: '', distance: '' });
+    }
+  };
+
+  const removeLandmark = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      landmarks: prev.landmarks?.filter((_, i) => i !== index) || []
+    }));
+  };
+
+  const addPaymentPlan = () => {
+    if (newPaymentPlan.name.trim() && newPaymentPlan.terms.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        payment_plans: [...(prev.payment_plans || []), { ...newPaymentPlan }]
+      }));
+      setNewPaymentPlan({ name: '', description: '', terms: '' });
+    }
+  };
+
+  const removePaymentPlan = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      payment_plans: prev.payment_plans?.filter((_, i) => i !== index) || []
     }));
   };
 
@@ -402,25 +443,98 @@ export const AdminProjectEditPage: React.FC = () => {
                     placeholder="Add connectivity feature"
                   />
 
-                  <ArrayField
-                    label="Landmarks"
-                    items={formData.landmarks || []}
-                    newValue={newLandmark}
-                    setNewValue={setNewLandmark}
-                    onAdd={() => addToArray('landmarks', newLandmark)}
-                    onRemove={(index) => removeFromArray('landmarks', index)}
-                    placeholder="Add nearby landmark"
-                  />
+                  {/* Landmarks */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Landmarks</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <Input
+                          value={newLandmark.name}
+                          onChange={(e) => setNewLandmark(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Landmark name"
+                        />
+                        <Input
+                          value={newLandmark.distance}
+                          onChange={(e) => setNewLandmark(prev => ({ ...prev, distance: e.target.value }))}
+                          placeholder="Distance (e.g., 5km)"
+                        />
+                        <Button type="button" onClick={addLandmark} variant="outline">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {formData.landmarks?.map((landmark, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span className="text-sm">
+                              <strong>{landmark.name}</strong> - {landmark.distance}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeLandmark(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  <ArrayField
-                    label="Payment Plans"
-                    items={formData.payment_plans || []}
-                    newValue={newPaymentPlan}
-                    setNewValue={setNewPaymentPlan}
-                    onAdd={() => addToArray('payment_plans', newPaymentPlan)}
-                    onRemove={(index) => removeFromArray('payment_plans', index)}
-                    placeholder="Add payment plan"
-                  />
+                  {/* Payment Plans */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Payment Plans</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Input
+                          value={newPaymentPlan.name}
+                          onChange={(e) => setNewPaymentPlan(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Payment plan name"
+                        />
+                        <Input
+                          value={newPaymentPlan.description}
+                          onChange={(e) => setNewPaymentPlan(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Description"
+                        />
+                        <Textarea
+                          value={newPaymentPlan.terms}
+                          onChange={(e) => setNewPaymentPlan(prev => ({ ...prev, terms: e.target.value }))}
+                          placeholder="Terms and conditions"
+                          rows={2}
+                        />
+                        <Button type="button" onClick={addPaymentPlan} variant="outline">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Payment Plan
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {formData.payment_plans?.map((plan, index) => (
+                          <div key={index} className="p-3 bg-gray-50 rounded">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{plan.name}</h4>
+                                {plan.description && (
+                                  <p className="text-sm text-gray-600 mt-1">{plan.description}</p>
+                                )}
+                                <p className="text-sm text-gray-500 mt-1">{plan.terms}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removePaymentPlan(index)}
+                                className="text-red-500 hover:text-red-700 ml-2"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 

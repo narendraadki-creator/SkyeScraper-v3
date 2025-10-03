@@ -34,7 +34,14 @@ export const AdminOrganizationDetailsPage: React.FC = () => {
 
   useEffect(() => {
     if (role !== 'admin') {
-      navigate('/dashboard');
+      // Redirect non-admins to their appropriate dashboard
+      if (role === 'developer') {
+        navigate('/developer');
+      } else if (role === 'agent') {
+        navigate('/agent-projects');
+      } else {
+        navigate('/developer'); // fallback
+      }
       return;
     }
     if (organizationId) {

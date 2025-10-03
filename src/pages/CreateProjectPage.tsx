@@ -23,6 +23,16 @@ export const CreateProjectPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [createdProject, setCreatedProject] = useState<any>(null);
 
+  // Redirect admins to the admin-specific project creation page
+  // Block agents from accessing this page
+  React.useEffect(() => {
+    if (role === 'admin') {
+      navigate('/admin/projects/create', { replace: true });
+    } else if (role === 'agent') {
+      navigate('/agent-projects', { replace: true });
+    }
+  }, [role, navigate]);
+
   const handleCreateProject = async (data: CreateProjectData) => {
     setLoading(true);
     try {

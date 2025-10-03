@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { projectService } from '../services/projectService';
 import { useAuth } from '../contexts/AuthContext';
 import { FileList } from '../components/files/FileList';
@@ -14,6 +15,7 @@ import {
   ArrowLeft, 
   Edit, 
   Trash2, 
+  Archive,
   MapPin, 
   Calendar, 
   DollarSign, 
@@ -41,6 +43,15 @@ export const ProjectDetailsPage: React.FC = () => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadPurpose, setUploadPurpose] = useState<'brochure' | 'floor_plan' | 'unit_data' | 'image' | 'document'>('brochure');
   const [fileListKey, setFileListKey] = useState(0);
+  
+  // Confirmation dialog states
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'archive';
+  }>({
+    isOpen: false,
+    type: 'delete',
+  });
 
   useEffect(() => {
     if (id) {
@@ -63,23 +74,61 @@ export const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const handleDeleteProject = async () => {
-    if (!project || !confirm('Are you sure you want to delete this project?')) {
-      return;
-    }
+  const handleDeleteProject = () => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'delete',
+    });
+  };
+
+
+  const handleArchiveProject = () => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'archive',
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!project) return;
 
     try {
-      const result = await projectService.deleteProject(project.id);
-      
-      if (result.error) {
-        setError(result.error.message);
-        return;
-      }
+      if (confirmDialog.type === 'delete') {
+        const result = await projectService.deleteProject(project.id);
+        
+        if (result.error) {
+          setError(result.error.message);
+          return;
+        }
 
-      navigate('/projects');
+        navigate('/projects');
+      } else if (confirmDialog.type === 'archive') {
+        const result = await projectService.updateProject(project.id, { status: 'archived' } as any);
+        
+        if (result.error) {
+          setError(result.error.message);
+          return;
+        }
+
+        // Reload the project to get updated data
+        await loadProject(project.id);
+      }
+      
+      // Close dialog
+      setConfirmDialog({
+        isOpen: false,
+        type: 'delete',
+      });
     } catch (err) {
-      setError('Failed to delete project');
+      setError(`Failed to ${confirmDialog.type} project`);
     }
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({
+      isOpen: false,
+      type: 'delete',
+    });
   };
 
   const getCreationMethodBadge = (method: string) => {
@@ -173,6 +222,12 @@ export const ProjectDetailsPage: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+                <Badge 
+                  variant={project.status === 'published' ? 'success' : project.status === 'draft' ? 'warning' : 'error'}
+                  className="flex items-center gap-1"
+                >
+                  {project.status === 'published' ? 'Published' : project.status === 'draft' ? 'Draft' : 'Archived'}
+                </Badge>
                 {project.is_featured && (
                   <Badge variant="default" className="flex items-center gap-1">
                     <Star className="w-3 h-3" />
@@ -192,6 +247,7 @@ export const ProjectDetailsPage: React.FC = () => {
                 <Button
                   onClick={() => navigate(`/projects/${project.id}/units`)}
                   variant="outline"
+                  title="Manage Project Units"
                 >
                   <Building className="w-4 h-4 mr-2" />
                   Manage Units
@@ -199,14 +255,26 @@ export const ProjectDetailsPage: React.FC = () => {
                 <Button
                   onClick={() => navigate(`/projects/${project.id}/edit`)}
                   variant="outline"
+                  title="Edit Project Details"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
                 <Button
+                  onClick={handleArchiveProject}
+                  variant="outline"
+                  className="text-orange-600 hover:text-orange-700"
+                  disabled={project.status === 'archived'}
+                  title={project.status === 'archived' ? 'Project is already archived' : 'Archive Project'}
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  Archive
+                </Button>
+                <Button
                   onClick={handleDeleteProject}
                   variant="outline"
                   className="text-red-600 hover:text-red-700"
+                  title="Delete Project"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
@@ -612,6 +680,22 @@ export const ProjectDetailsPage: React.FC = () => {
             <p className="text-red-800">{error}</p>
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={handleCloseDialog}
+          onConfirm={handleConfirmAction}
+          title={confirmDialog.type === 'delete' ? 'Delete Project' : 'Archive Project'}
+          message={
+            confirmDialog.type === 'delete'
+              ? `Are you sure you want to delete "${project?.name}"? This action cannot be undone.`
+              : `Are you sure you want to archive "${project?.name}"? It will be hidden from agents but can be restored later.`
+          }
+          confirmText={confirmDialog.type === 'delete' ? 'Delete' : 'Archive'}
+          cancelText="Cancel"
+          type={confirmDialog.type === 'delete' ? 'danger' : 'warning'}
+        />
       </div>
     </div>
   );

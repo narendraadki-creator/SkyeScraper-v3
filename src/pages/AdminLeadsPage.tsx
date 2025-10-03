@@ -6,9 +6,11 @@ import { Input } from '../components/ui/Input';
 import { SimpleSelect } from '../components/ui/SimpleSelect';
 import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
+import { LeadDetailView } from '../components/leads/LeadDetailView';
 import { adminService } from '../services/adminService';
 import { useAuth } from '../contexts/AuthContext';
 import type { AdminLead, AdminLeadFilters } from '../types/admin';
+import type { Lead } from '../types/lead';
 import {
   Target,
   Search,
@@ -37,10 +39,18 @@ export const AdminLeadsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminLeadFilters>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     if (role !== 'admin') {
-      navigate('/dashboard');
+      // Redirect non-admins to their appropriate dashboard
+      if (role === 'developer') {
+        navigate('/developer');
+      } else if (role === 'agent') {
+        navigate('/agent-projects');
+      } else {
+        navigate('/developer'); // fallback
+      }
       return;
     }
     loadLeads();
@@ -70,6 +80,47 @@ export const AdminLeadsPage: React.FC = () => {
       ...prev,
       [key]: value || undefined
     }));
+  };
+
+  const handleLeadSelect = (lead: AdminLead) => {
+    // Convert AdminLead to Lead type for LeadDetailView
+    const leadForDetail: Lead = {
+      id: lead.id,
+      organization_id: lead.organization_id,
+      project_id: lead.project_id,
+      unit_id: lead.unit_id,
+      first_name: lead.first_name,
+      last_name: lead.last_name,
+      email: lead.email,
+      phone: lead.phone,
+      source: lead.source,
+      status: lead.status,
+      stage: lead.stage,
+      budget_min: lead.budget_min,
+      budget_max: lead.budget_max,
+      preferred_unit_types: lead.preferred_unit_types,
+      preferred_location: lead.preferred_location,
+      requirements: lead.requirements,
+      assigned_to: lead.assigned_to,
+      notes: lead.notes,
+      next_followup: lead.next_followup,
+      last_contacted: lead.last_contacted,
+      score: lead.score,
+      created_by: lead.created_by,
+      created_at: lead.created_at,
+      updated_at: lead.updated_at
+    };
+    setSelectedLead(leadForDetail);
+  };
+
+  const handleLeadUpdate = (updatedLead: Lead) => {
+    setSelectedLead(updatedLead);
+    // Refresh the leads list
+    loadLeads();
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedLead(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -140,6 +191,21 @@ export const AdminLeadsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loading size="lg" text="Loading leads..." />
+      </div>
+    );
+  }
+
+  // Show lead detail view if a lead is selected
+  if (selectedLead) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LeadDetailView
+            leadId={selectedLead.id}
+            onClose={handleCloseDetail}
+            onUpdate={handleLeadUpdate}
+          />
+        </div>
       </div>
     );
   }
@@ -368,7 +434,7 @@ export const AdminLeadsPage: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       className="flex-1"
-                      onClick={() => navigate(`/leads/${lead.id}`)}
+                      onClick={() => handleLeadSelect(lead)}
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View Details
@@ -377,7 +443,7 @@ export const AdminLeadsPage: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       className="flex-1"
-                      onClick={() => navigate(`/admin/leads/${lead.id}/edit`)}
+                      onClick={() => handleLeadSelect(lead)}
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit Lead

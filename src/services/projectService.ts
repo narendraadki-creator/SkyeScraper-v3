@@ -1,11 +1,32 @@
 // src/services/projectService.ts
 import { supabase } from '../lib/supabase';
-// import type { CreateProjectData, Project } from '../types/project';
+import type { CreateProjectData, Project } from '../types/project';
+import type { UserRole } from '../contexts/AuthContext';
+
+// Helper function to get user role with new three-role system
+const getUserRole = (employee: { role: string; role_new?: string | null }): UserRole => {
+  // Use role_new if available, fallback to role for backward compatibility
+  const role = employee.role_new || employee.role;
+  
+  // Validate and return typed role
+  if (role === 'admin' || role === 'developer' || role === 'agent') {
+    return role as UserRole;
+  }
+  
+  // Legacy role mapping for backward compatibility
+  if (role === 'manager' || role === 'staff') {
+    return 'developer'; // Legacy roles become developers
+  }
+  
+  console.warn('Unknown role:', role, 'defaulting to developer');
+  return 'developer'; // Safe fallback
+};
 
 interface CreateProjectInput {
   name: string;
   location: string;
   project_type?: string;
+  status?: 'draft' | 'published' | 'archived';
   description?: string;
   developer_name?: string;
   address?: string;
@@ -38,11 +59,20 @@ export const projectService = {
     // Get employee data
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, organization_id')
+      .select('id, organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
+
+    // Check role - only developers can create projects directly
+    const userRole = getUserRole(employee);
+    if (userRole === 'admin') {
+      throw new Error('Admins must use the admin project creation flow');
+    }
+    if (userRole === 'agent') {
+      throw new Error('Agents cannot create projects');
+    }
 
     // Handle file upload if brochure is provided
     let brochureUrl = input.brochure_url;
@@ -83,7 +113,7 @@ export const projectService = {
               brochure_url: brochureUrl,
               organization_id: employee.organization_id,
               created_by: employee.id,
-              status: 'draft',
+              status: input.status || 'published', // Use provided status or default to published
               is_featured: false,
               views_count: 0,
               leads_count: 0,
@@ -114,25 +144,27 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
 
+    const userRole = getUserRole(employee);
+
     let query = supabase
       .from('projects')
       .select('*');
 
-    // Filter based on role:
-    // - Developers: see only their own organization's projects
+    // Filter based on NEW three-role system:
     // - Agents: see published projects from all developers
+    // - Developers: see only their own organization's projects
     // - Admins: see all projects
-    if (employee.role === 'agent') {
+    if (userRole === 'agent') {
       query = query.eq('status', 'published');
-    } else if (employee.role === 'admin') {
-      // Admin can see all projects - no filter needed
-    } else {
+    } else if (userRole === 'admin') {
+      // System admin can see all projects - no filter needed
+    } else { // userRole === 'developer'
       query = query.eq('organization_id', employee.organization_id);
     }
 
@@ -155,61 +187,103 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
+
+    const userRole = getUserRole(employee);
 
     let query = supabase
       .from('projects')
       .select('*')
       .eq('id', id);
 
-    // Filter based on role:
-    // - Developers: can only view their own organization's projects
+    // Filter based on NEW three-role system:
     // - Agents: can view published projects from any organization
+    // - Developers: can only view their own organization's projects
     // - Admins: can view all projects
-    if (employee.role === 'agent') {
+    if (userRole === 'agent') {
       query = query.eq('status', 'published');
-    } else if (employee.role === 'admin') {
-      // Admin can view all projects - no filter needed
-    } else {
+    } else if (userRole === 'admin') {
+      // System admin can view all projects - no filter needed
+    } else { // userRole === 'developer'
       query = query.eq('organization_id', employee.organization_id);
     }
 
     const { data, error } = await query.single();
 
     if (error) throw error;
+    
+    // Increment view count when project is viewed
+    if (data) {
+      const { error: updateError } = await supabase
+        .from('projects')
+        .update({ 
+          views_count: (data.views_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (updateError) {
+        console.error('Failed to increment view count:', updateError);
+        // Don't throw error here as the project data was retrieved successfully
+      }
+      
+      // Return the updated data with incremented view count
+      return {
+        ...data,
+        views_count: (data.views_count || 0) + 1
+      };
+    }
+    
     return data;
   },
 
   async updateProject(id: string, updates: Partial<CreateProjectInput>) {
+    console.log('projectService.updateProject called with:', { id, updates });
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+    console.log('User authenticated:', user.id);
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
 
-      // Only developers and admins can update projects
-      if (employee.role === 'agent') {
-        throw new Error('Agents cannot update projects');
-      }
+    const userRole = getUserRole(employee);
+    console.log('User role:', userRole, 'Employee data:', employee);
 
-    const { data, error } = await supabase
+    // Only developers and admins can update projects
+    if (userRole === 'agent') {
+      throw new Error('Agents cannot update projects');
+    }
+
+    let query = supabase
       .from('projects')
       .update(updates)
-      .eq('id', id)
-      .eq('organization_id', employee.organization_id)
-      .select()
-      .single();
+      .eq('id', id);
 
-    if (error) throw error;
+    // Apply organization filter based on role
+    if (userRole === 'developer') {
+      query = query.eq('organization_id', employee.organization_id);
+    }
+    // Admins can update any project - no additional filter needed
+
+    console.log('Executing update query...');
+    const { data, error } = await query.select().single();
+
+    if (error) {
+      console.error('Update query error:', error);
+      throw error;
+    }
+    
+    console.log('Update successful, returning data:', data);
     return data;
   },
 
@@ -219,22 +293,31 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role')
+      .select('organization_id, role, role_new')
       .eq('user_id', user.id)
       .single();
 
     if (!employee) throw new Error('Employee not found');
 
-      // Only developers and admins can delete projects
-      if (employee.role === 'agent') {
-        throw new Error('Agents cannot delete projects');
-      }
+    const userRole = getUserRole(employee);
 
-    const { error } = await supabase
+    // Only developers and admins can delete projects
+    if (userRole === 'agent') {
+      throw new Error('Agents cannot delete projects');
+    }
+
+    let query = supabase
       .from('projects')
       .delete()
-      .eq('id', id)
-      .eq('organization_id', employee.organization_id);
+      .eq('id', id);
+
+    // Apply organization filter based on role
+    if (userRole === 'developer') {
+      query = query.eq('organization_id', employee.organization_id);
+    }
+    // Admins can delete any project - no additional filter needed
+
+    const { error } = await query;
 
     if (error) throw error;
     return true;
@@ -262,9 +345,26 @@ export const projectService = {
       'Al Habtoor Group', 'Meraas', 'Dubai Properties', 'Al Futtaim Real Estate'
     ];
     
-    // Generate realistic project names
-    const projectName = fileName.replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
-    const cleanProjectName = projectName.split(' ').map(word => 
+    // Generate realistic project names based on UAE market (simulating AI extraction from brochure content)
+    const projectNames = isDubai ? [
+      'Marina Heights', 'Burj Vista Residences', 'Dubai Creek Harbour', 'Emirates Hills Villa',
+      'Downtown Central Tower', 'Palm Jumeirah Paradise', 'Business Bay Elite', 'Dubai Hills Gardens',
+      'Jumeirah Bay Island', 'Creek Beach Towers', 'DIFC Gateway', 'Al Habtoor City',
+      'Dubai Marina Walk', 'Bluewaters Residences', 'City Walk Apartments', 'Dubai Festival City'
+    ] : [
+      'Corniche Towers', 'Saadiyat Beach Villas', 'Al Reem Island Central', 'Yas Island Marina',
+      'Al Maryah Residence', 'Capital Gate Heights', 'Khalifa City Gardens', 'Al Raha Beach',
+      'Masdar City Green', 'Shams Abu Dhabi', 'Al Bateen Marina', 'Nation Towers'
+    ];
+    
+    // Add project type suffix for realism
+    const typePrefix = isVilla ? 'Villas' : isApartment ? 'Residences' : isBusiness ? 'Business Center' : 'Tower';
+    const randomBaseName = projectNames[Math.floor(Math.random() * projectNames.length)];
+    const projectName = `${randomBaseName} ${typePrefix}`;
+    
+    // Fallback to cleaned filename only if needed
+    const fallbackName = fileName.replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+    const cleanFallbackName = fallbackName.split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
     
@@ -334,7 +434,7 @@ export const projectService = {
     const randomAddress = addresses[Math.floor(Math.random() * addresses.length)];
     
     return {
-      name: cleanProjectName || `AI Extracted Project - ${timestamp}`,
+      name: projectName || cleanFallbackName || `AI Extracted Project - ${timestamp}`,
       location: randomLocation,
       project_type: isVilla ? 'Villa' : isApartment ? 'Apartment' : isBusiness ? 'Commercial' : 'Residential',
       description: `Premium ${isVilla ? 'villa' : isApartment ? 'apartment' : 'residential'} development in ${randomLocation}. Features modern design, world-class amenities, and strategic location with excellent connectivity.`,
