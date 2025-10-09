@@ -20,6 +20,7 @@ const DashboardContent: React.FC = () => {
       // Redirect developers from old /dashboard URL to new /developer URL
       navigate('/developer', { replace: true });
     }
+    // Note: No redirect for /developer route to avoid interfering with mobile routes
   }, [role, navigate]);
 
   const handleSignOut = async () => {

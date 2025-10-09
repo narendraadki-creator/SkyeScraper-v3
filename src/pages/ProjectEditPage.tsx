@@ -11,7 +11,8 @@ import { CreateProjectForm } from '../components/projects/CreateProjectForm';
 import { ArrowLeft } from 'lucide-react';
 import type { Project, CreateProjectData } from '../types/project';
 
-export const ProjectEditPage: React.FC = () => {
+interface ProjectEditProps { variant?: 'desktop' | 'mobile' }
+export const ProjectEditPage: React.FC<ProjectEditProps> = ({ variant = 'desktop' }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { role } = useAuth();
@@ -172,25 +173,27 @@ export const ProjectEditPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className={variant === 'mobile' ? '' : 'min-h-screen bg-gray-50'}>
+      <div className={variant === 'mobile' ? '' : 'max-w-4xl mx-auto px-4 py-8'}>
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/projects/${project.id}`)}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Project
-            </Button>
+        {variant === 'desktop' && (
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projects/${project.id}`)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Project
+              </Button>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Edit Project</h1>
+            <p className="text-gray-600 mt-2">
+              Update the details for "{project.name}"
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Edit Project</h1>
-          <p className="text-gray-600 mt-2">
-            Update the details for "{project.name}"
-          </p>
-        </div>
+        )}
 
         {/* Error Display */}
         {error && (

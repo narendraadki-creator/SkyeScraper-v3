@@ -1,5 +1,5 @@
 import './style.css'
-import React from 'react'
+import './styles/mobile-design-system.css'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 

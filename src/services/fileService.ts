@@ -25,7 +25,16 @@ export const fileService = {
       image: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
       brochure: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'],
       floor_plan: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
-      document: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'],
+      // Allow spreadsheets to be tracked as general documents so they appear in Brochures tab
+      document: [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword',
+        'text/plain',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv',
+      ],
     };
 
     const purposeTypes = allowedTypes[purpose as keyof typeof allowedTypes] || Object.keys(SUPPORTED_FILE_TYPES);

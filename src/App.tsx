@@ -27,6 +27,22 @@ import { AdminLeadsPage } from './pages/AdminLeadsPage';
 import { AdminAnalyticsPage } from './pages/AdminAnalyticsPage';
 import { AuthDebugPage } from './pages/AuthDebugPage';
 import { ClearAuthPage } from './pages/ClearAuthPage';
+import { MobileAgentPage } from './pages/MobileAgentPage';
+import { MobileDeveloperDashboardPage } from './pages/MobileDeveloperDashboardPage';
+import { MobileProjectEditPage } from './pages/MobileProjectEditPage';
+import { MobileProjectUnitsPage } from './pages/MobileProjectUnitsPage';
+import { MobileDeveloperProjectDetailsPage } from './pages/MobileDeveloperProjectDetailsPage';
+import { MobileTestPage } from './pages/MobileTestPage';
+import { MobileLeadsPageWrapper } from './pages/MobileLeadsPage';
+import { MobileLeadDetailsPageWrapper } from './pages/MobileLeadDetailsPage';
+import { MobileCreateLeadPageWrapper } from './pages/MobileCreateLeadPage';
+import { MobileSettingsPageWrapper } from './pages/MobileSettingsPage';
+import { MobileProfilePageWrapper } from './pages/MobileProfilePage';
+import { MobileSecurityPageWrapper } from './pages/MobileSecurityPage';
+import { MobileNotificationsPageWrapper } from './pages/MobileNotificationsPage';
+import { MobileLanguagePageWrapper } from './pages/MobileLanguagePage';
+import { DeveloperHomePageWrapper } from './pages/DeveloperHomePage';
+import { PropertyDetailsPageWrapper } from './pages/PropertyDetailsPage';
 import { Loading } from './components/ui/Loading';
 
 // Component to handle authentication routing
@@ -59,6 +75,10 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/test" 
         element={<SimpleTestPage />} 
+      />
+      <Route 
+        path="/mobile-test" 
+        element={<MobileTestPage />} 
       />
       
       {/* Protected routes */}
@@ -105,6 +125,68 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/leads/create/:projectId" 
         element={user ? <CreateLeadPage /> : <Navigate to="/login" replace />} 
+      />
+      
+      {/* Mobile Routes */}
+      <Route 
+        path="/mobile/agent" 
+        element={user ? <MobileAgentPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/developer" 
+        element={user ? <MobileDeveloperDashboardPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/developer/project/:projectId" 
+        element={user ? <MobileDeveloperProjectDetailsPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/developer/project/:id/edit" 
+        element={user ? <MobileProjectEditPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/developer/project/:projectId/units" 
+        element={user ? <MobileProjectUnitsPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/leads" 
+        element={user ? <MobileLeadsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/leads/:leadId" 
+        element={user ? <MobileLeadDetailsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/leads/create/:projectId" 
+        element={user ? <MobileCreateLeadPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/settings" 
+        element={user ? <MobileSettingsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/profile" 
+        element={user ? <MobileProfilePageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/security" 
+        element={user ? <MobileSecurityPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/notifications" 
+        element={user ? <MobileNotificationsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/language" 
+        element={user ? <MobileLanguagePageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/developer/:developerId" 
+        element={user ? <DeveloperHomePageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/project/:projectId" 
+        element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
       />
       
       {/* Admin Routes */}

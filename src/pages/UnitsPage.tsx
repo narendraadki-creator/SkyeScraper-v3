@@ -9,7 +9,8 @@ import { unitService } from '../services/unitService';
 import { useAuth } from '../contexts/AuthContext';
 import type { Unit, UnitImport } from '../types/unit';
 
-export const UnitsPage: React.FC = () => {
+interface UnitsPageProps { variant?: 'desktop' | 'mobile'; initialShowImport?: boolean }
+export const UnitsPage: React.FC<UnitsPageProps> = ({ variant = 'desktop', initialShowImport = false }) => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { role } = useAuth();
@@ -28,6 +29,13 @@ export const UnitsPage: React.FC = () => {
       loadImportHistory();
     }
   }, [projectId]);
+
+  // Allow external pages to open the import dialog on load (mobile deep link)
+  useEffect(() => {
+    if (initialShowImport) {
+      setShowImport(true);
+    }
+  }, [initialShowImport]);
 
   const loadUnits = async () => {
     if (!projectId) return;
@@ -190,45 +198,47 @@ export const UnitsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={variant === 'mobile' ? 'space-y-6' : 'p-6 space-y-6'}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/projects/${projectId}`)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Project
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {role === 'agent' ? 'Project Units' : 'Units Management'}
-            </h1>
-            <p className="text-gray-600">
-              {role === 'agent' ? 'View available units for this project' : 'Manage units for this project'}
-            </p>
-          </div>
-        </div>
-        {/* Only show management buttons for developers */}
-        {role !== 'agent' && (
-          <div className="flex space-x-2">
+      {variant === 'desktop' && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
             <Button
               variant="outline"
-              onClick={() => setShowImport(true)}
+              onClick={() => navigate(`/projects/${projectId}`)}
             >
-              <Upload className="w-4 h-4 mr-2" />
-              Import Units
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Project
             </Button>
-            <Button
-              onClick={() => navigate(`/projects/${projectId}/units/new`)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Unit
-            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {role === 'agent' ? 'Project Units' : 'Units Management'}
+              </h1>
+              <p className="text-gray-600">
+                {role === 'agent' ? 'View available units for this project' : 'Manage units for this project'}
+              </p>
+            </div>
           </div>
-        )}
-      </div>
+          {/* Only show management buttons for developers */}
+          {role !== 'agent' && (
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowImport(true)}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Units
+              </Button>
+              <Button
+                onClick={() => navigate(`/projects/${projectId}/units/new`)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Unit
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Error Display */}
       {error && (
