@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
 import { MobileLayout } from './MobileLayout';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -41,7 +42,7 @@ interface PropertyDetailsPageProps {
 
 type TabType = 'overview' | 'floor-plans' | 'brochures' | 'availability' | 'payment-plans';
 
-export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ className = '' }) => {
+export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ className = '' }) => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { user, role } = useAuth();
@@ -378,7 +379,9 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
     switch (activeTab) {
       case 'overview':
         return (
-          <div style={{ padding: '20px' }}>
+          <div style={{ 
+            padding: '20px'
+          }}>
             <div style={{ marginBottom: '24px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: 'var(--gray-900)' }}>
                 Project Description
@@ -464,26 +467,40 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
 
       case 'floor-plans':
         return (
-          <div style={{ padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '350px' }}>
-            <Building size={48} color="var(--gray-400)" style={{ marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'var(--gray-900)' }}>
-              Floor Plans
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
-              Floor plans will be available soon. Please contact us for more details.
-            </p>
+          <div style={{ 
+            padding: '20px'
+          }}>
+            <div style={{
+              textAlign: 'center', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '300px'
+            }}>
+              <Building size={48} color="var(--gray-400)" style={{ marginBottom: '16px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'var(--gray-900)' }}>
+                Floor Plans
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
+                Floor plans will be available soon. Please contact us for more details.
+              </p>
+            </div>
           </div>
         );
 
       case 'brochures':
         return (
-          <div style={{ padding: '16px' }}>
+          <div style={{ 
+            padding: '20px'
+          }}>
             {/* Upload Actions */}
             <div style={{
               display: 'flex',
               gap: '8px',
               justifyContent: 'flex-end',
-              marginBottom: '12px'
+              marginBottom: '12px',
+              flexWrap: 'wrap'
             }}>
               {[
                 { id: 'brochure', label: 'Upload Brochure' },
@@ -502,7 +519,9 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
                     borderRadius: '8px',
                     fontSize: '12px',
                     fontWeight: '600',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   {btn.label}
@@ -574,7 +593,11 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
               }
 
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '12px'
+                }}>
                   {allFiles.map((file, index) => (
                     <div key={index} style={{
                       backgroundColor: 'white',
@@ -778,7 +801,9 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
 
       case 'availability':
         return (
-          <div style={{ padding: '16px' }}>
+          <div style={{ 
+            padding: '20px'
+          }}>
             {units.length > 0 && displayConfig.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Summary Card */}
@@ -988,6 +1013,29 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
           </div>
         );
 
+      case 'payment-plans':
+        return (
+          <div style={{ 
+            padding: '20px'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '300px'
+            }}>
+              <CreditCard size={48} color="var(--gray-400)" style={{ marginBottom: '16px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: 'var(--gray-900)' }}>
+                Payment Plans
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
+                Payment plan details will be available soon.
+              </p>
+            </div>
+          </div>
+        );
 
       default:
         return null;
@@ -996,7 +1044,15 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
 
   if (loading) {
     return (
-      <div className="mobile-app">
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#F8F9F9',
+        maxWidth: '600px', // Fixed width for mobile-like experience
+        margin: '0 auto', // Center the layout
+        width: '100%',
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px' // Space for fixed bottom navigation
+      }}>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -1007,13 +1063,22 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
         }}>
           Loading project details...
         </div>
+        <AgentBottomNavigation />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="mobile-app">
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#F8F9F9',
+        maxWidth: '600px', // Fixed width for mobile-like experience
+        margin: '0 auto', // Center the layout
+        width: '100%',
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px' // Space for fixed bottom navigation
+      }}>
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column',
@@ -1039,16 +1104,41 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
             Go Back
           </button>
         </div>
+        <AgentBottomNavigation />
       </div>
     );
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#F8F9F9',
-      fontFamily: 'Montserrat, sans-serif'
-    }}>
+    <>
+      {/* Global styles to prevent any content expansion */}
+      <style>{`
+        .project-details-container {
+          box-sizing: border-box;
+        }
+        .project-details-container * {
+          box-sizing: border-box;
+        }
+        .project-details-container img,
+        .project-details-container video,
+        .project-details-container iframe {
+          max-width: 100%;
+          height: auto;
+        }
+      `}</style>
+      <div 
+        className="project-details-container"
+        style={{
+          minHeight: '100vh',
+          backgroundColor: '#F8F9F9',
+          fontFamily: 'Montserrat, sans-serif',
+          maxWidth: '600px', // Fixed width ONLY for Project Details page
+          margin: '0 auto', // Center ONLY the Project Details page
+          width: '100%',
+          overflow: 'hidden', // Prevent any content from expanding beyond bounds
+          boxSizing: 'border-box',
+          paddingBottom: '80px' // Space for fixed bottom navigation
+        }}>
       {/* Header */}
       <div style={{
         backgroundColor: '#F8F9F9',
@@ -1272,7 +1362,15 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
       }}>
         <div style={{
           height: '450px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden', // Prevent horizontal scrolling
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          // Global text wrapping and overflow prevention
+          wordWrap: 'break-word',
+          wordBreak: 'break-word',
+          hyphens: 'auto'
         }}>
           {renderTabContent()}
         </div>
@@ -1311,66 +1409,9 @@ export const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ classN
         </div>
       )}
 
-      {/* Bottom Navigation */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid rgba(1, 106, 93, 0.1)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          padding: '0 16px',
-          maxWidth: '600px',
-          margin: '0 auto'
-        }}>
-          {[ 
-            { id: 'home', label: 'Home', icon: Home, active: false },
-            { id: 'promotions', label: 'Promotions', icon: TrendingUp, active: false },
-            { id: 'settings', label: 'Settings', icon: Settings, active: false }
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'home') navigate('/mobile/developer');
-                  else if (item.id === 'settings') navigate('/mobile/settings');
-                }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  background: item.active ? 'rgba(1, 106, 93, 0.1)' : 'none',
-                  color: item.active ? '#016A5D' : '#777777',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  minWidth: '60px'
-                }}
-              >
-                <Icon size={22} color={item.active ? '#016A5D' : '#777777'} />
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  letterSpacing: '0.3px',
-                  fontFamily: 'Montserrat, sans-serif'
-                }}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
     </div>
+    </>
   );
 };

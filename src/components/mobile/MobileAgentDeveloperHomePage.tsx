@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { MobileLayout } from './MobileLayout';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   ArrowLeft,
@@ -16,11 +17,7 @@ import {
   Star,
   Download,
   Filter,
-  SortAsc,
-  Home,
-  Users,
-  TrendingUp,
-  Settings
+  SortAsc
 } from 'lucide-react';
 
 interface DeveloperInfo {
@@ -33,7 +30,7 @@ interface DeveloperInfo {
   min_starting_price?: number;
 }
 
-export const DeveloperHomePage: React.FC = () => {
+export const MobileAgentDeveloperHomePage: React.FC = () => {
   const { developerId } = useParams<{ developerId: string }>();
   const navigate = useNavigate();
   const { user, role } = useAuth();
@@ -107,15 +104,15 @@ export const DeveloperHomePage: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/mobile/developer');
+    navigate('/mobile/agent');
   };
 
   const handleProjectClick = (project: Project) => {
-    navigate(`/project/${project.id}`);
+    navigate(`/mobile/agent/project/${project.id}`);
   };
 
   const handleCreateLead = (project: Project) => {
-    navigate(`/mobile/leads/create/${project.id}`);
+    navigate(`/mobile/agent/leads/create/${project.id}`);
   };
 
   const formatCurrency = (amount: number) => {
@@ -229,10 +226,11 @@ export const DeveloperHomePage: React.FC = () => {
   const primaryLocation = developer.address || 'Various Locations';
 
   return (
-    <div style={{
-      minHeight: '100vh',
+    <div style={{ 
+      minHeight: '100vh', 
       backgroundColor: '#F8F9F9',
-      fontFamily: 'Montserrat, sans-serif'
+      fontFamily: 'Montserrat, sans-serif',
+      paddingBottom: '80px' // Add padding for Agent Layout bottom navigation
     }}>
       {/* Header */}
       <div style={{
@@ -454,7 +452,7 @@ export const DeveloperHomePage: React.FC = () => {
         ) : (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
             gap: '24px' 
           }}>
             {sortedProjects.map((project) => (
@@ -673,68 +671,8 @@ export const DeveloperHomePage: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom Navigation */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid rgba(1, 106, 93, 0.1)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          padding: '0 16px',
-          maxWidth: '600px',
-          margin: '0 auto'
-        }}>
-          {[
-            { id: 'home', label: 'Home', icon: Home, active: false },
-            { id: 'leads', label: 'Leads', icon: Users, active: false },
-            { id: 'promotions', label: 'Promotions', icon: TrendingUp, active: false },
-            { id: 'settings', label: 'Settings', icon: Settings, active: false }
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'home') navigate('/mobile/developer');
-                  else if (item.id === 'leads') navigate('/mobile/leads');
-                  else if (item.id === 'settings') navigate('/mobile/settings');
-                }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  background: item.active ? 'rgba(1, 106, 93, 0.1)' : 'none',
-                  color: item.active ? '#016A5D' : '#777777',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  minWidth: '60px'
-                }}
-              >
-                <Icon size={22} color={item.active ? '#016A5D' : '#777777'} />
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  letterSpacing: '0.3px',
-                  fontFamily: 'Montserrat, sans-serif'
-                }}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React from 'react';
-import { MobileSecurityPage } from '../components/mobile/MobileSecurityPage';
+import { MobileAgentSecurityPage } from '../components/mobile/MobileagentSecurityPage';
 
 export const MobileSecurityPageWrapper: React.FC = () => {
-  return <MobileSecurityPage />;
+  return <MobileAgentSecurityPage />;
 };
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 import { MobileLayout } from './MobileLayout';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import type { Lead, LeadFilters, LeadStatus, LeadStage } from '../../types/lead';
 import { 
   Search, 
@@ -202,7 +203,8 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#F8F9F9',
-      fontFamily: 'Montserrat, sans-serif'
+      fontFamily: 'Montserrat, sans-serif',
+      paddingBottom: '80px' // Space for bottom navigation
     }}>
       {/* Header */}
       <div style={{
@@ -553,7 +555,7 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
               </p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
               {filteredLeads.map((lead) => (
                 <div
                   key={lead.id}
@@ -714,6 +716,9 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
           })}
         </div>
       </div>
+
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
     </div>
   );
 };

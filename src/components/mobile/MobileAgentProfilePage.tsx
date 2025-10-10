@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import { 
   User,
   Mail,
@@ -18,11 +19,11 @@ import {
   Settings
 } from 'lucide-react';
 
-interface MobileProfilePageProps {
+interface MobileAgentProfilePageProps {
   className?: string;
 }
 
-export const MobileProfilePage: React.FC<MobileProfilePageProps> = ({ className = '' }) => {
+export const MobileAgentProfilePage: React.FC<MobileAgentProfilePageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
   const { user, role } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -42,7 +43,7 @@ export const MobileProfilePage: React.FC<MobileProfilePageProps> = ({ className 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleBack = () => {
-    navigate('/mobile/settings');
+    navigate('/mobile/agent');
   };
 
   const handleEdit = () => {
@@ -730,6 +731,9 @@ export const MobileProfilePage: React.FC<MobileProfilePageProps> = ({ className 
           ))}
         </div>
       </div>
+
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
     </div>
   );
 };

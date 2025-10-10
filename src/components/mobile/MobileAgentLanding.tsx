@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   Search, 
@@ -613,78 +614,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
         )}
       </div>
 
-      {/* Bottom Navigation - Premium Design */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid rgba(1, 106, 93, 0.1)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 40
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          padding: '12px 16px',
-          maxWidth: '100%'
-        }}>
-          {[
-            { icon: Home, label: 'Home', active: true },
-            { icon: Users, label: 'Leads', active: false },
-            { icon: Star, label: 'Promotions', active: false },
-            { icon: Menu, label: 'Settings', active: false }
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                switch (item.label) {
-                  case 'Home':
-                    navigate('/mobile/developer');
-                    break;
-                  case 'Leads':
-                    navigate('/mobile/leads');
-                    break;
-                  case 'Promotions':
-                    // Navigate to promotions
-                    break;
-                  case 'Settings':
-                    navigate('/mobile/settings');
-                    break;
-                }
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                minWidth: '60px',
-                background: item.active ? 'rgba(1, 106, 93, 0.1)' : 'none',
-                border: 'none',
-                color: item.active ? '#016A5D' : '#777777'
-              }}
-            >
-              <item.icon size={22} color={item.active ? '#016A5D' : '#777777'} />
-              <span style={{
-                fontSize: '11px',
-                fontWeight: '500',
-                textAlign: 'center',
-                lineHeight: 1,
-                fontFamily: 'Montserrat, sans-serif',
-                letterSpacing: '0.3px'
-              }}>
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
 
       <style>{`
         @keyframes spin {

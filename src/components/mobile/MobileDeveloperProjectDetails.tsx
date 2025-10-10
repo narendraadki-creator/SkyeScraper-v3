@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
+import { AgentBottomNavigation } from './AgentBottomNavigation';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -1377,63 +1378,8 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
         </div>
       )}
 
-      {/* Bottom Navigation */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid rgba(1, 106, 93, 0.1)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          padding: '8px 16px'
-        }}>
-          {[
-            { id: 'home', label: 'Home', icon: Home, active: false },
-            { id: 'promotions', label: 'Promotions', icon: TrendingUp, active: false },
-            { id: 'settings', label: 'Settings', icon: Settings, active: false }
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'home') navigate('/mobile/developer');
-                  else if (item.id === 'settings') navigate('/mobile/settings');
-                }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  background: item.active ? 'rgba(1, 106, 93, 0.1)' : 'none',
-                  color: item.active ? '#016A5D' : '#777777',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  minWidth: '60px'
-                }}
-              >
-                <Icon size={22} color={item.active ? '#016A5D' : '#777777'} />
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  letterSpacing: '0.3px'
-                }}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Agent Bottom Navigation */}
+      <AgentBottomNavigation />
 
       {/* Confirmation Dialog */}
       {showConfirmDialog && (

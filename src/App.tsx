@@ -32,7 +32,7 @@ import { MobileDeveloperDashboardPage } from './pages/MobileDeveloperDashboardPa
 import { MobileProjectEditPage } from './pages/MobileProjectEditPage';
 import { MobileProjectUnitsPage } from './pages/MobileProjectUnitsPage';
 import { MobileDeveloperProjectDetailsPage } from './pages/MobileDeveloperProjectDetailsPage';
-import { MobileTestPage } from './pages/MobileTestPage';
+import { MobileAgentPromotionsPage } from './pages/MobileAgentPromotionsPage';
 import { MobileLeadsPageWrapper } from './pages/MobileLeadsPage';
 import { MobileLeadDetailsPageWrapper } from './pages/MobileLeadDetailsPage';
 import { MobileCreateLeadPageWrapper } from './pages/MobileCreateLeadPage';
@@ -78,7 +78,7 @@ const AuthRouter: React.FC = () => {
       />
       <Route 
         path="/mobile-test" 
-        element={<MobileTestPage />} 
+        element={<MobileAgentPromotionsPage />} 
       />
       
       {/* Protected routes */}
@@ -131,6 +131,30 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/mobile/agent" 
         element={user ? <MobileAgentPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/leads" 
+        element={user ? <MobileLeadsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/promotion" 
+        element={user ? <MobileAgentPromotionsPage /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/settings" 
+        element={user ? <MobileSettingsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/project/:projectId" 
+        element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/leads/create/:projectId" 
+        element={user ? <MobileCreateLeadPageWrapper /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/mobile/agent/developer/:developerId" 
+        element={user ? <DeveloperHomePageWrapper /> : <Navigate to="/login" replace />} 
       />
       <Route 
         path="/mobile/developer" 
