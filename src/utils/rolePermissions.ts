@@ -62,6 +62,13 @@ export const canCreateLeads = (role: string): boolean => {
 };
 
 /**
+ * Check if user can upload files to projects
+ */
+export const canUploadFiles = (role: string): boolean => {
+  return ['developer', 'admin'].includes(role);
+};
+
+/**
  * Check if user can access admin features
  */
 export const canAccessAdmin = (role: string): boolean => {

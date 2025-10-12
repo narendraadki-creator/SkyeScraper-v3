@@ -5,7 +5,7 @@ import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import { canEditProject, canDeleteProject } from '../../utils/rolePermissions';
+import { canEditProject, canDeleteProject, canUploadFiles } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -496,39 +496,42 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
             padding: '20px'
           }}>
             {/* Upload Actions */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              justifyContent: 'flex-end',
-              marginBottom: '12px',
-              flexWrap: 'wrap'
-            }}>
-              {[
-                { id: 'brochure', label: 'Upload Brochure' },
-                { id: 'floor_plan', label: 'Upload Floor Plan' },
-                { id: 'image', label: 'Upload Image' },
-                { id: 'document', label: 'Upload Document' }
-              ].map(btn => (
-                <button
-                  key={btn.id}
-                  onClick={() => handleOpenFilePicker(btn.id as any)}
-                  style={{
-                    padding: '10px 12px',
-                    backgroundColor: 'var(--primary-600)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0
-                  }}
-                >
-                  {btn.label}
-                </button>
-              ))}
-            </div>
+            {/* Upload buttons - Only show for developers and admins */}
+            {canUploadFiles(role) && (
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                justifyContent: 'flex-end',
+                marginBottom: '12px',
+                flexWrap: 'wrap'
+              }}>
+                {[
+                  { id: 'brochure', label: 'Upload Brochure' },
+                  { id: 'floor_plan', label: 'Upload Floor Plan' },
+                  { id: 'image', label: 'Upload Image' },
+                  { id: 'document', label: 'Upload Document' }
+                ].map(btn => (
+                  <button
+                    key={btn.id}
+                    onClick={() => handleOpenFilePicker(btn.id as any)}
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: 'var(--primary-600)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0
+                    }}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {(() => {
               // Collect files from database tables
               const allFiles: Array<{ url: string; name: string; type: string; fileSize?: number; mimeType?: string }> = [];
@@ -572,23 +575,26 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                     <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
                       No files have been uploaded for this project yet.
                     </p>
-                  <div style={{ marginTop: '12px' }}>
-                    <button
-                      onClick={() => handleOpenFilePicker('brochure')}
-                      style={{
-                        padding: '10px 16px',
-                        backgroundColor: 'var(--primary-600)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Upload Brochure
-                    </button>
-                  </div>
+                    {/* Only show upload button for developers and admins */}
+                    {canUploadFiles(role) && (
+                      <div style={{ marginTop: '12px' }}>
+                        <button
+                          onClick={() => handleOpenFilePicker('brochure')}
+                          style={{
+                            padding: '10px 16px',
+                            backgroundColor: 'var(--primary-600)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Upload Brochure
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -1377,16 +1383,18 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
         </div>
       </div>
 
-      {/* Hidden native file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        style={{ display: 'none' }}
-        onChange={handleFileSelected}
-      />
+      {/* Hidden native file input - Only render for developers and admins */}
+      {canUploadFiles(role) && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={handleFileSelected}
+        />
+      )}
 
-      {/* Upload progress chip */}
-      {uploading && (
+      {/* Upload progress chip - Only show for developers and admins */}
+      {canUploadFiles(role) && uploading && (
         <div style={{
           position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
           backgroundColor: 'white', border: '1px solid rgba(1,106,93,0.2)',
