@@ -410,13 +410,17 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
       backgroundColor: '#F8F9F9', 
       display: 'flex', 
       flexDirection: 'column',
-      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif'
+      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+      overflow: 'visible'
     }}>
       {/* Hero Section - Premium Design */}
       <div style={{
         backgroundColor: '#F8F9F9',
         padding: '60px 20px 40px 20px',
-        textAlign: 'center'
+        textAlign: 'center',
+        overflow: 'visible',
+        position: 'relative',
+        zIndex: 100
       }}>
         {/* Title */}
         <h1 style={{
@@ -507,10 +511,12 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
           display: 'flex',
           gap: '12px',
           overflowX: 'auto',
-          paddingBottom: '8px',
+          overflowY: 'visible',
+          paddingBottom: '20px',
           justifyContent: 'center',
           flexWrap: 'wrap',
-          position: 'relative'
+          position: 'relative',
+          zIndex: 1000
         }}>
           {[
             { icon: MapPin, label: 'Location', key: 'location' },
@@ -548,20 +554,53 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
 
               {/* Dropdown Menu */}
               {activeDropdown === filter.key && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: '0',
-                  right: '0',
-                  backgroundColor: 'white',
-                  border: '1px solid rgba(1, 106, 93, 0.15)',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                  zIndex: 1000,
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                  marginTop: '4px'
-                }}>
+                <>
+                  {/* Backdrop */}
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                    zIndex: 9998
+                  }} onClick={() => setActiveDropdown(null)} />
+                  
+                  {/* Dropdown */}
+                  <div style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '90vw',
+                    maxWidth: '400px',
+                    backgroundColor: 'white',
+                    border: '1px solid rgba(1, 106, 93, 0.15)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+                    zIndex: 9999,
+                    maxHeight: '70vh',
+                    overflowY: 'auto'
+                  }}>
+                    {/* Dropdown Header */}
+                    <div style={{
+                      padding: '16px 20px',
+                      borderBottom: '1px solid rgba(1, 106, 93, 0.1)',
+                      backgroundColor: '#F8F9F9',
+                      borderRadius: '12px 12px 0 0'
+                    }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        color: '#016A5D',
+                        textAlign: 'center',
+                        fontFamily: 'Montserrat, sans-serif'
+                      }}>
+                        Select {filter.label}
+                      </h3>
+                    </div>
+
                   {/* Clear Filter Option */}
                   <button
                     onClick={() => handleFilterChange(filter.key, '')}
@@ -608,7 +647,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
                       {option}
                     </button>
                   ))}
-                </div>
+                  </div>
+                </>
               )}
             </div>
           ))}
