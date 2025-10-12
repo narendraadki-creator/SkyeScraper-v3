@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { ProjectEditPage } from './ProjectEditPage';
 import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 
 export const MobileProjectEditPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,19 +59,39 @@ export const MobileProjectEditPage: React.FC = () => {
           }}>Update your project details</p>
         </div>
 
-        {/* Content */}
-        <div style={{ padding: '12px 20px 100px 20px' }}>
+        {/* Content - Temporary Placeholder */}
+        <div style={{ padding: '20px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
-            maxWidth: '720px',
-            margin: '0 auto',
+            maxWidth: '400px',
+            textAlign: 'center',
             backgroundColor: 'white',
             borderRadius: '12px',
-            border: '1px solid rgba(1,106,93,0.10)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            padding: '16px'
+            padding: '32px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
           }}>
-            {/* Reuse existing page (functionality unchanged) */}
-            <ProjectEditPage variant="mobile" />
+            <AlertCircle size={48} color="#016A5D" style={{ marginBottom: '16px' }} />
+            <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#333', marginBottom: '12px' }}>
+              Feature Coming Soon
+            </h2>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+              Mobile project editing is being optimized for the best experience. 
+              Please use the desktop version for now or contact support.
+            </p>
+            <button
+              onClick={() => navigate(-1)}
+              style={{
+                backgroundColor: '#016A5D',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Go Back
+            </button>
           </div>
         </div>
 
