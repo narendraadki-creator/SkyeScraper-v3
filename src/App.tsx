@@ -34,10 +34,7 @@ import { Loading } from './components/ui/Loading';
 
 // Component to handle authentication routing
 const AuthRouter: React.FC = () => {
-  const { user, loading, role } = useAuth();
-
-  // Debug logging
-  console.log('AuthRouter Debug:', { user: !!user, loading, role, currentPath: window.location.pathname });
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
