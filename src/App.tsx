@@ -350,6 +350,20 @@ const AuthRouter: React.FC = () => {
         element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
       />
       
+      {/* Legacy route redirects */}
+      <Route 
+        path="/developer" 
+        element={<Navigate to="/mobile/dev" replace />} 
+      />
+      <Route 
+        path="/agent-projects" 
+        element={<Navigate to="/mobile/agent" replace />} 
+      />
+      <Route 
+        path="/admin" 
+        element={<Navigate to="/mobile/admin" replace />} 
+      />
+      
       {/* Default redirect */}
       <Route 
         path="/" 

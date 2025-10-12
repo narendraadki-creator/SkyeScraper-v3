@@ -7,7 +7,7 @@ interface RoleBasedRedirectProps {
 }
 
 export const RoleBasedRedirect: React.FC<RoleBasedRedirectProps> = ({ 
-  fallback = '/developer' 
+  fallback = '/mobile/dev' 
 }) => {
   const { role } = useAuth();
 
@@ -15,11 +15,11 @@ export const RoleBasedRedirect: React.FC<RoleBasedRedirectProps> = ({
   const getRedirectPath = () => {
     switch (role) {
       case 'admin':
-        return '/admin';
+        return '/mobile/admin';
       case 'developer':
-        return '/developer';
+        return '/mobile/dev';
       case 'agent':
-        return '/agent-projects';
+        return '/mobile/agent';
       default:
         return fallback;
     }
