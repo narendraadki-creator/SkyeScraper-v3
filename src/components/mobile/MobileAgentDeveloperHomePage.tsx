@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { projectService } from '../../services/projectService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   ArrowLeft,
-  Search,
   MapPin,
   Building,
-  DollarSign,
   Calendar,
-  Bed,
-  Bath,
-  Star,
-  Download,
-  Filter,
-  SortAsc
+  Bed
 } from 'lucide-react';
 
 interface DeveloperInfo {
@@ -33,7 +24,6 @@ interface DeveloperInfo {
 export const MobileAgentDeveloperHomePage: React.FC = () => {
   const { developerId } = useParams<{ developerId: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
   const [developer, setDeveloper] = useState<DeveloperInfo | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,36 +40,44 @@ export const MobileAgentDeveloperHomePage: React.FC = () => {
     try {
       console.log('Loading developer data for ID:', developerId);
       
-      // Import supabase to get developer info
+      // Extract developer name from the generated ID
+      // ID format: dev-meraas -> meraas
+      const developerName = developerId?.replace('dev-', '').replace(/-/g, ' ');
+      console.log('Developer name:', developerName);
+      
+      // Import supabase to get projects for this developer
       const { supabase } = await import('../../lib/supabase');
       
-      // Get developer organization info
-      const { data: organization, error: orgError } = await supabase
-        .from('organizations')
+      // Get all projects for this developer from projects table
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
         .select('*')
-        .eq('id', developerId)
-        .eq('type', 'developer')
-        .single();
+        .eq('developer_name', developerName)
+        .eq('status', 'published')
+        .order('name');
 
-      if (orgError || !organization) {
-        console.error('Developer not found:', orgError);
-        navigate('/mobile/developer');
+      if (projectsError || !projects || projects.length === 0) {
+        console.error('Developer projects not found:', projectsError);
+        navigate('/mobile/agent');
         return;
       }
 
+      // Create a mock organization object from the projects data
+      const organization = {
+        id: developerId!,
+        name: developerName!,
+        description: 'Premium residential and commercial developments',
+        logo_url: '',
+        address: projects[0]?.location || '',
+        type: 'developer'
+      };
+
       console.log('Developer organization:', organization);
+      console.log('Developer projects:', projects);
 
-      // Get all published projects
-      const allProjects = await projectService.listProjects({ status: 'published' });
-      console.log('All projects:', allProjects);
-
-      // Filter projects for this developer
-      const developerProjects = allProjects.filter(project => project.organization_id === developerId);
-      console.log('Developer projects:', developerProjects);
-
-      // Calculate developer stats
-      const projects_count = developerProjects.length;
-      const prices = developerProjects
+      // Calculate developer stats from the projects we already fetched
+      const projects_count = projects.length;
+      const prices = projects
         .map(p => p.starting_price)
         .filter(price => price && price > 0);
       const min_starting_price = prices.length > 0 ? Math.min(...prices) : undefined;
@@ -95,7 +93,7 @@ export const MobileAgentDeveloperHomePage: React.FC = () => {
       };
 
       setDeveloper(developerInfo);
-      setProjects(developerProjects);
+      setProjects(projects);
     } catch (error) {
       console.error('Failed to load developer data:', error);
     } finally {
