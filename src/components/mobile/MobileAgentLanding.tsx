@@ -57,16 +57,82 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
   });
   const [showFilters, setShowFilters] = useState(false);
   const [searchResults, setSearchResults] = useState<'developers' | 'projects'>('developers');
+  const [dropdownOptions, setDropdownOptions] = useState({
+    locations: [] as string[],
+    propertyTypes: [] as string[],
+    priceRanges: [] as string[],
+    bedrooms: [] as string[],
+    statuses: [] as string[]
+  });
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     loadDevelopers();
     loadProjects();
   }, []);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-dropdown]')) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // Update filtered projects when projects or filters change
   useEffect(() => {
     applyFilters();
+    extractDropdownOptions();
   }, [projects, filters]);
+
+  const extractDropdownOptions = () => {
+    if (projects.length === 0) return;
+
+    // Extract unique locations
+    const locations = [...new Set(projects.map(p => p.location).filter(Boolean))].sort();
+    
+    // Extract unique property types
+    const propertyTypes = [...new Set(projects.map(p => p.project_type).filter(Boolean))].sort();
+    
+    // Extract unique statuses
+    const statuses = [...new Set(projects.map(p => p.status).filter(Boolean))].sort();
+    
+    // Generate price ranges based on actual data
+    const allPrices = projects.map(p => p.starting_price).filter(Boolean) as number[];
+    const priceRanges = generatePriceRanges(allPrices);
+    
+    // Generate bedroom options (this might need to be extracted from custom_attributes or units)
+    const bedrooms = ['1', '2', '3', '4', '5+']; // Default options, can be enhanced with real data
+    
+    setDropdownOptions({
+      locations,
+      propertyTypes,
+      priceRanges,
+      bedrooms,
+      statuses
+    });
+  };
+
+  const generatePriceRanges = (prices: number[]): string[] => {
+    if (prices.length === 0) return ['Under 500K', '500K - 1M', '1M - 2M', 'Over 2M'];
+    
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    
+    const ranges = [];
+    
+    if (min < 500000) ranges.push('Under 500K');
+    if (prices.some(p => p >= 500000 && p <= 1000000)) ranges.push('500K - 1M');
+    if (prices.some(p => p > 1000000 && p <= 2000000)) ranges.push('1M - 2M');
+    if (prices.some(p => p > 2000000)) ranges.push('Over 2M');
+    
+    return ranges.length > 0 ? ranges : ['Under 500K', '500K - 1M', '1M - 2M', 'Over 2M'];
+  };
 
   const loadDevelopers = async () => {
     setLoading(true);
@@ -234,10 +300,10 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
 
     if (filters.price_range) {
       const priceRanges = {
-        'under-500k': (price: number) => price < 500000,
-        '500k-1m': (price: number) => price >= 500000 && price <= 1000000,
-        '1m-2m': (price: number) => price > 1000000 && price <= 2000000,
-        'over-2m': (price: number) => price > 2000000
+        'Under 500K': (price: number) => price < 500000,
+        '500K - 1M': (price: number) => price >= 500000 && price <= 1000000,
+        '1M - 2M': (price: number) => price > 1000000 && price <= 2000000,
+        'Over 2M': (price: number) => price > 2000000
       };
       
       const rangeFilter = priceRanges[filters.price_range as keyof typeof priceRanges];
@@ -265,6 +331,33 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
       ...prev,
       [key]: value,
     }));
+    setActiveDropdown(null); // Close dropdown after selection
+  };
+
+  const toggleDropdown = (dropdownKey: string) => {
+    setActiveDropdown(activeDropdown === dropdownKey ? null : dropdownKey);
+  };
+
+  const getDropdownOptions = (type: string): string[] => {
+    switch (type) {
+      case 'location': return dropdownOptions.locations;
+      case 'property_type': return dropdownOptions.propertyTypes;
+      case 'price_range': return dropdownOptions.priceRanges;
+      case 'bedrooms': return dropdownOptions.bedrooms;
+      case 'project_status': return dropdownOptions.statuses;
+      default: return [];
+    }
+  };
+
+  const getFilterKey = (label: string): string => {
+    switch (label) {
+      case 'Location': return 'location';
+      case 'Type': return 'property_type';
+      case 'Price Range': return 'price_range';
+      case 'Bedrooms': return 'bedrooms';
+      case 'Status': return 'project_status';
+      default: return '';
+    }
   };
 
   const clearSearch = () => {
@@ -278,6 +371,7 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
       bathrooms: '',
       project_status: ''
     });
+    setActiveDropdown(null);
   };
 
   const handleViewDeveloper = (developer: DeveloperWithStats) => {
@@ -408,55 +502,115 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
           </div>
         </div>
 
-        {/* Filter Buttons */}
+        {/* Dynamic Filter Dropdowns */}
         <div style={{
           display: 'flex',
           gap: '12px',
           overflowX: 'auto',
           paddingBottom: '8px',
           justifyContent: 'center',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          position: 'relative'
         }}>
           {[
-            { icon: MapPin, label: 'Location' },
-            { icon: Building, label: 'Type' },
-            { icon: DollarSign, label: 'Price Range' },
-            { icon: Home, label: 'Bedrooms' },
-            { icon: Calendar, label: 'Status' }
+            { icon: MapPin, label: 'Location', key: 'location' },
+            { icon: Building, label: 'Type', key: 'property_type' },
+            { icon: DollarSign, label: 'Price Range', key: 'price_range' },
+            { icon: Home, label: 'Bedrooms', key: 'bedrooms' },
+            { icon: Calendar, label: 'Status', key: 'project_status' }
           ].map((filter, index) => (
-            <button
-              key={index}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 16px',
-                background: 'white',
-                border: '1px solid rgba(1, 106, 93, 0.15)',
-                borderRadius: '8px',
-                color: '#333333',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)',
-                fontFamily: 'Montserrat, sans-serif'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#016A5D';
-                e.currentTarget.style.boxShadow = '0 2px 12px rgba(1, 106, 93, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.15)';
-                e.currentTarget.style.boxShadow = '0 1px 8px rgba(0, 0, 0, 0.05)';
-              }}
-            >
-              <filter.icon size={16} color="#016A5D" />
-              {filter.label}
-              <ChevronDown size={14} color="#777777" />
-            </button>
+            <div key={index} style={{ position: 'relative' }} data-dropdown>
+              <button
+                onClick={() => toggleDropdown(filter.key)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 16px',
+                  background: filters[filter.key as keyof typeof filters] ? '#016A5D' : 'white',
+                  border: `1px solid ${filters[filter.key as keyof typeof filters] ? '#016A5D' : 'rgba(1, 106, 93, 0.15)'}`,
+                  borderRadius: '8px',
+                  color: filters[filter.key as keyof typeof filters] ? 'white' : '#333333',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)',
+                  fontFamily: 'Montserrat, sans-serif'
+                }}
+              >
+                <filter.icon size={16} color={filters[filter.key as keyof typeof filters] ? 'white' : '#016A5D'} />
+                {filters[filter.key as keyof typeof filters] || filter.label}
+                <ChevronDown size={14} color={filters[filter.key as keyof typeof filters] ? 'white' : '#777777'} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {activeDropdown === filter.key && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0',
+                  right: '0',
+                  backgroundColor: 'white',
+                  border: '1px solid rgba(1, 106, 93, 0.15)',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                  zIndex: 1000,
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  marginTop: '4px'
+                }}>
+                  {/* Clear Filter Option */}
+                  <button
+                    onClick={() => handleFilterChange(filter.key, '')}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      background: 'none',
+                      border: 'none',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      color: '#777777',
+                      cursor: 'pointer',
+                      fontFamily: 'Montserrat, sans-serif',
+                      borderBottom: '1px solid rgba(1, 106, 93, 0.1)'
+                    }}
+                  >
+                    Clear {filter.label}
+                  </button>
+
+                  {/* Filter Options */}
+                  {getDropdownOptions(filter.key).map((option, optionIndex) => (
+                    <button
+                      key={optionIndex}
+                      onClick={() => handleFilterChange(filter.key, option)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        background: 'none',
+                        border: 'none',
+                        textAlign: 'left',
+                        fontSize: '14px',
+                        color: '#333333',
+                        cursor: 'pointer',
+                        fontFamily: 'Montserrat, sans-serif',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#F0F9F8';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
