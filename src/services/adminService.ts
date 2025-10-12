@@ -12,10 +12,10 @@ import type {
   AdminDashboardStats
 } from '../types/admin';
 
-// Helper function to get user role with new three-role system
-const getUserRole = (employee: { role: string; role_new?: string | null }): UserRole => {
-  // Use role_new if available, fallback to role for backward compatibility
-  const role = employee.role_new || employee.role;
+// Helper function to get user role with three-role system
+const getUserRole = (employee: { role: string }): UserRole => {
+  // Use the role from the database
+  const role = employee.role;
   
   // Validate and return typed role
   if (role === 'admin' || role === 'developer' || role === 'agent') {
@@ -40,7 +40,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -163,7 +163,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -223,7 +223,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -291,7 +291,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -364,7 +364,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, role, role_new')
+      .select('id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -438,7 +438,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -472,7 +472,7 @@ class AdminService {
     // Check if user is admin (NEW THREE-ROLE SYSTEM)
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -501,7 +501,7 @@ class AdminService {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('role, role_new')
+      .select('role')
       .eq('user_id', user.id)
       .single();
 
@@ -678,7 +678,7 @@ class AdminService {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, role, role_new')
+      .select('id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -742,7 +742,7 @@ class AdminService {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, role, role_new')
+      .select('id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -769,7 +769,7 @@ class AdminService {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, role, role_new')
+      .select('id, role')
       .eq('user_id', user.id)
       .single();
 

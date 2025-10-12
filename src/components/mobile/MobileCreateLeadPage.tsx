@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { LEAD_SOURCES, UNIT_TYPES } from '../../types/lead';
 import type { CreateLeadData, Lead } from '../../types/lead';
 import { 
@@ -992,8 +992,8 @@ export const MobileCreateLeadPage: React.FC<MobileCreateLeadPageProps> = ({ clas
         </form>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

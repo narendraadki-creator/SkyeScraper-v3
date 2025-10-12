@@ -16,10 +16,10 @@ import type {
 } from '../types/unit';
 import { STANDARD_COLUMN_MAPPINGS } from '../types/unit';
 
-// Helper function to get user role with new three-role system
-const getUserRole = (employee: { role: string; role_new?: string | null }): UserRole => {
-  // Use role_new if available, fallback to role for backward compatibility
-  const role = employee.role_new || employee.role;
+// Helper function to get user role with three-role system
+const getUserRole = (employee: { role: string }): UserRole => {
+  // Use the role from the database
+  const role = employee.role;
   
   // Validate and return typed role
   if (role === 'admin' || role === 'developer' || role === 'agent') {
@@ -43,7 +43,7 @@ export const unitService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -114,7 +114,7 @@ export const unitService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { projectService } from '../services/projectService';
 import { leadService } from '../services/leadService';
+import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
 import { 
   FileText, 
   Plus, 
@@ -142,7 +143,8 @@ const MobileDeveloperDashboardContent: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: 'Montserrat, sans-serif'
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px'
       }}>
         <div style={{
           textAlign: 'center',
@@ -175,7 +177,8 @@ const MobileDeveloperDashboardContent: React.FC = () => {
       backgroundColor: '#F8F9F9',
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: 'Montserrat, sans-serif'
+      fontFamily: 'Montserrat, sans-serif',
+      paddingBottom: '80px'
     }}>
       {/* Header */}
       <div style={{
@@ -516,7 +519,7 @@ const MobileDeveloperDashboardContent: React.FC = () => {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
-                  onClick={() => navigate(`/mobile/developer/project/${project.id}`)}
+                  onClick={() => navigate(`/mobile/dev/project/${project.id}`)}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#F0F9F8';
                     e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.2)';
@@ -670,63 +673,8 @@ const MobileDeveloperDashboardContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid rgba(1, 106, 93, 0.1)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          padding: '0 16px',
-          height: '80px'
-        }}>
-          {[ 
-            { id: 'home', label: 'Home', icon: Home, active: true },
-            { id: 'promotions', label: 'Promotions', icon: Gift, active: false },
-            { id: 'settings', label: 'Settings', icon: Settings, active: false }
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => {
-                if (item.id === 'home') navigate('/mobile/developer');
-                else if (item.id === 'promotions') navigate('/mobile/promotions');
-                else if (item.id === 'settings') navigate('/mobile/settings');
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                background: item.active ? 'rgba(1, 106, 93, 0.1)' : 'none',
-                color: item.active ? '#016A5D' : '#777777',
-                transition: 'all 0.2s ease',
-                minWidth: '60px',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <item.icon size={22} color={item.active ? '#016A5D' : '#777777'} />
-              <span style={{
-                fontSize: '11px',
-                fontWeight: '500',
-                letterSpacing: '0.3px'
-              }}>
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

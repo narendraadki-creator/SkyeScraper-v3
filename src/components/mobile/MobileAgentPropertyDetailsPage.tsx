@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
-import { MobileLayout } from './MobileLayout';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+// import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
+import { canEditProject, canDeleteProject } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -1063,7 +1064,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
         }}>
           Loading project details...
         </div>
-        <AgentBottomNavigation />
+        <RoleBasedBottomNavigation />
       </div>
     );
   }
@@ -1104,7 +1105,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
             Go Back
           </button>
         </div>
-        <AgentBottomNavigation />
+        <RoleBasedBottomNavigation />
       </div>
     );
   }
@@ -1409,8 +1410,8 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
         </div>
       )}
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
     </>
   );

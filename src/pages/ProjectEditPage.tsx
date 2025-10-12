@@ -30,11 +30,15 @@ export const ProjectEditPage: React.FC<ProjectEditProps> = ({ variant = 'desktop
       // Redirect admin to admin project edit page
       navigate(`/admin/projects/${id}/edit`, { replace: true });
     } else if (role === 'agent') {
-      // Agents cannot edit projects
-      navigate('/agent-projects', { replace: true });
+      // Agents cannot edit projects - redirect based on variant
+      if (variant === 'mobile') {
+        navigate('/mobile/agent', { replace: true });
+      } else {
+        navigate('/agent-projects', { replace: true });
+      }
     }
     // Developers can stay and edit
-  }, [role, navigate, id]);
+  }, [role, navigate, id, variant]);
 
   useEffect(() => {
     if (id) {

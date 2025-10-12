@@ -1,7 +1,7 @@
 import React from 'react';
-import { MobileAgentLanguagePage } from '../components/mobile/MobileAgnetLanguagePage';
+import { MobileLanguagePage } from '../components/mobile/MobileLanguagePage';
 
 export const MobileLanguagePageWrapper: React.FC = () => {
-  return <MobileAgentLanguagePage />;
+  return <MobileLanguagePage />;
 };
 

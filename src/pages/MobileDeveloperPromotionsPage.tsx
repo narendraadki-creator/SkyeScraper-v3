@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
 import { Star, TrendingUp, Gift, Percent, ArrowLeft } from 'lucide-react';
 
-export const MobileAgentPromotionsPage: React.FC = () => {
+export const MobileDeveloperPromotionsPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -22,7 +22,7 @@ export const MobileAgentPromotionsPage: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
           <button
-            onClick={() => navigate('/mobile/agent')}
+            onClick={() => navigate('/mobile/dev')}
             style={{
               background: 'rgba(255, 255, 255, 0.2)',
               border: 'none',
@@ -52,7 +52,7 @@ export const MobileAgentPromotionsPage: React.FC = () => {
               opacity: 0.9,
               fontFamily: 'Montserrat, sans-serif'
             }}>
-              Exclusive offers and deals
+              Manage your promotional campaigns
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const MobileAgentPromotionsPage: React.FC = () => {
             color: '#777777',
             fontFamily: 'Montserrat, sans-serif'
           }}>
-            Exciting promotions and exclusive deals will be available here soon.
+            Promotional campaign management tools will be available here soon.
           </p>
         </div>
 
@@ -110,10 +110,10 @@ export const MobileAgentPromotionsPage: React.FC = () => {
             margin: 0
           }}>
             {[
-              { icon: TrendingUp, text: 'Limited time offers' },
-              { icon: Gift, text: 'Exclusive agent rewards' },
-              { icon: Percent, text: 'Special commission rates' },
-              { icon: Star, text: 'Featured properties' }
+              { icon: TrendingUp, text: 'Create promotional campaigns' },
+              { icon: Gift, text: 'Set up special offers and discounts' },
+              { icon: Percent, text: 'Track campaign performance' },
+              { icon: Star, text: 'Target specific agent organizations' }
             ].map((item, index) => (
               <li key={index} style={{
                 display: 'flex',

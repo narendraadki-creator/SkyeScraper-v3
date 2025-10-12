@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
-import { MobileLayout } from './MobileLayout';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+// import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Lead, LeadFilters, LeadStatus, LeadStage } from '../../types/lead';
 import { 
   Search, 
@@ -717,8 +717,8 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
         </div>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

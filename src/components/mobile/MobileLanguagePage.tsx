@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
+import { getRoleBasedBackPath } from '../../utils/rolePermissions';
 import { 
   Globe,
   MapPin,
@@ -17,21 +19,23 @@ interface MobileLanguagePageProps {
   className?: string;
 }
 
-export const MobileAgentLanguagePage: React.FC<MobileLanguagePageProps> = ({ className = '' }) => {
+export const MobileLanguagePage: React.FC<MobileLanguagePageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { role } = useAuth();
   
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedRegion, setSelectedRegion] = useState('AE');
   const [selectedTimezone, setSelectedTimezone] = useState('Asia/Dubai');
 
   const handleBack = () => {
-    navigate('/mobile/settings');
+    navigate(getRoleBasedBackPath(role || 'agent', location.pathname));
   };
 
   const handleSave = () => {
     // Here you would typically save the settings
     console.log('Saving language settings:', { selectedLanguage, selectedRegion, selectedTimezone });
-    navigate('/mobile/settings');
+    navigate(getRoleBasedBackPath(role || 'agent', location.pathname));
   };
 
   const languages = [
@@ -322,8 +326,8 @@ export const MobileAgentLanguagePage: React.FC<MobileLanguagePageProps> = ({ cla
         </button>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

@@ -40,7 +40,7 @@ export const developerService = {
       // Get employee data to check role
       const { data: employee } = await supabase
         .from('employees')
-        .select('organization_id, role, role_new')
+        .select('organization_id, role')
         .eq('user_id', user.id)
         .single();
 
@@ -51,7 +51,7 @@ export const developerService = {
 
       // For agents, get all developer organizations
       // For developers/admins, get all organizations (they can see all)
-      const userRole = employee.role_new || employee.role;
+      const userRole = employee.role;
       
       let organizationsQuery = supabase
         .from('organizations')

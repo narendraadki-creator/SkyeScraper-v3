@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   Search, 
@@ -614,8 +614,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
         )}
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
 
       <style>{`
         @keyframes spin {

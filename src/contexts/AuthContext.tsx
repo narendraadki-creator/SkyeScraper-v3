@@ -79,29 +79,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchEmployeeData = async (userId: string) => {
     try {
-      // Try to select with role_new first, fallback to just role if column doesn't exist
+      // First try with just the basic columns to avoid 406 errors
       let data, error;
       
-      try {
-        const result = await supabase
-          .from('employees')
-          .select('id, organization_id, role, role_new')
-          .eq('user_id', userId)
-          .single();
-        
-        data = result.data;
-        error = result.error;
-      } catch (err) {
-        // If role_new column doesn't exist, try without it
-        const result = await supabase
-          .from('employees')
-          .select('id, organization_id, role')
-          .eq('user_id', userId)
-          .single();
-        
-        data = result.data;
-        error = result.error;
-      }
+      const result = await supabase
+        .from('employees')
+        .select('id, organization_id, role')
+        .eq('user_id', userId)
+        .single();
+      
+      data = result.data;
+      error = result.error;
 
       if (error) {
         // If it's a "no rows" error, that's expected during registration
@@ -117,8 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setEmployeeId(data.id);
         setOrganizationId(data.organization_id);
         
-        // Use role_new if available, fallback to role for backward compatibility
-        const userRole = data.role_new || data.role;
+        // Use the role from the database
+        const userRole = data.role;
         
         // Validate and set role with type safety
         // Handle both old and new role systems

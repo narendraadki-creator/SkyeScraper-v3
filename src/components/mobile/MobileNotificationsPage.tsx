@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
+import { getRoleBasedBackPath } from '../../utils/rolePermissions';
 import { 
   Bell,
   Mail,
@@ -19,8 +21,10 @@ interface MobileNotificationsPageProps {
   className?: string;
 }
 
-export const MobileAgentNotificationsPage: React.FC<MobileNotificationsPageProps> = ({ className = '' }) => {
+export const MobileNotificationsPage: React.FC<MobileNotificationsPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { role } = useAuth();
   
   const [notifications, setNotifications] = useState({
     email: true,
@@ -33,7 +37,7 @@ export const MobileAgentNotificationsPage: React.FC<MobileNotificationsPageProps
   });
 
   const handleBack = () => {
-    navigate('/mobile/settings');
+    navigate(getRoleBasedBackPath(role || 'agent', location.pathname));
   };
 
   const handleToggle = (key: string) => {
@@ -344,8 +348,8 @@ export const MobileAgentNotificationsPage: React.FC<MobileNotificationsPageProps
         </div>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

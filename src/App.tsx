@@ -20,6 +20,14 @@ import { AdminOrganizationsPage } from './pages/AdminOrganizationsPage';
 import { AdminOrganizationDetailsPage } from './pages/AdminOrganizationDetailsPage';
 import { AdminOrganizationEditPage } from './pages/AdminOrganizationEditPage';
 import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
+import { 
+  RoleBasedRoute, 
+  AgentRoute, 
+  DeveloperRoute, 
+  AdminRoute, 
+  DeveloperOrAdminRoute, 
+  AgentOrDeveloperRoute 
+} from './components/auth/RoleBasedRoute';
 import { AdminProjectsPage } from './pages/AdminProjectsPage';
 import { AdminCreateProjectPage } from './pages/AdminCreateProjectPage';
 import { AdminProjectEditPage } from './pages/AdminProjectEditPage';
@@ -33,6 +41,11 @@ import { MobileProjectEditPage } from './pages/MobileProjectEditPage';
 import { MobileProjectUnitsPage } from './pages/MobileProjectUnitsPage';
 import { MobileDeveloperProjectDetailsPage } from './pages/MobileDeveloperProjectDetailsPage';
 import { MobileAgentPromotionsPage } from './pages/MobileAgentPromotionsPage';
+import { MobileDeveloperPromotionsPage } from './pages/MobileDeveloperPromotionsPage';
+import { MobileDeveloperSettingsPageWrapper } from './pages/MobileDeveloperSettingsPage';
+import { MobileAgentProjectEditPage } from './pages/MobileAgentProjectEditPage';
+import { MobileAgentUnitsPage } from './pages/MobileAgentUnitsPage';
+import { MobileDeveloperLeadsPageWrapper } from './pages/MobileDeveloperLeadsPage';
 import { MobileLeadsPageWrapper } from './pages/MobileLeadsPage';
 import { MobileLeadDetailsPageWrapper } from './pages/MobileLeadDetailsPage';
 import { MobileCreateLeadPageWrapper } from './pages/MobileCreateLeadPage';
@@ -127,50 +140,225 @@ const AuthRouter: React.FC = () => {
         element={user ? <CreateLeadPage /> : <Navigate to="/login" replace />} 
       />
       
-      {/* Mobile Routes */}
+      {/* Mobile Routes - Role-Based Protection */}
+      
+      {/* Agent Routes - Only accessible by agents */}
       <Route 
         path="/mobile/agent" 
-        element={user ? <MobileAgentPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileAgentPage />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/leads" 
-        element={user ? <MobileLeadsPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileLeadsPageWrapper />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/promotion" 
-        element={user ? <MobileAgentPromotionsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileAgentPromotionsPage />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/settings" 
-        element={user ? <MobileSettingsPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileSettingsPageWrapper />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/project/:projectId" 
-        element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <PropertyDetailsPageWrapper />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/leads/create/:projectId" 
-        element={user ? <MobileCreateLeadPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileCreateLeadPageWrapper />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/agent/developer/:developerId" 
-        element={user ? <DeveloperHomePageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentRoute>
+              <DeveloperHomePageWrapper />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
-        path="/mobile/developer" 
-        element={user ? <MobileDeveloperDashboardPage /> : <Navigate to="/login" replace />} 
+        path="/mobile/agent/project/:id/edit" 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileAgentProjectEditPage />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
-        path="/mobile/developer/project/:projectId" 
-        element={user ? <MobileDeveloperProjectDetailsPage /> : <Navigate to="/login" replace />} 
+        path="/mobile/agent/project/:projectId/units" 
+        element={
+          user ? (
+            <AgentRoute>
+              <MobileAgentUnitsPage />
+            </AgentRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      {/* Developer Routes - Only accessible by developers */}
+      <Route 
+        path="/mobile/dev" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileDeveloperDashboardPage />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
-        path="/mobile/developer/project/:id/edit" 
-        element={user ? <MobileProjectEditPage /> : <Navigate to="/login" replace />} 
+        path="/mobile/dev/promotion" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileDeveloperPromotionsPage />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
-        path="/mobile/developer/project/:projectId/units" 
-        element={user ? <MobileProjectUnitsPage /> : <Navigate to="/login" replace />} 
+        path="/mobile/dev/settings" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileDeveloperSettingsPageWrapper key="dev-settings" />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/project/:projectId" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileDeveloperProjectDetailsPage />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/project/:id/edit" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileProjectEditPage />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/project/:projectId/units" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileProjectUnitsPage />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/leads" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileDeveloperLeadsPageWrapper />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/leads/:leadId" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileLeadDetailsPageWrapper />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/mobile/dev/leads/create/:projectId" 
+        element={
+          user ? (
+            <DeveloperRoute>
+              <MobileCreateLeadPageWrapper />
+            </DeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/leads" 
@@ -188,21 +376,54 @@ const AuthRouter: React.FC = () => {
         path="/mobile/settings" 
         element={user ? <MobileSettingsPageWrapper /> : <Navigate to="/login" replace />} 
       />
+      {/* Shared Routes - Accessible by both agents and developers */}
       <Route 
         path="/mobile/profile" 
-        element={user ? <MobileProfilePageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentOrDeveloperRoute>
+              <MobileProfilePageWrapper />
+            </AgentOrDeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/security" 
-        element={user ? <MobileSecurityPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentOrDeveloperRoute>
+              <MobileSecurityPageWrapper key="security" />
+            </AgentOrDeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/notifications" 
-        element={user ? <MobileNotificationsPageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentOrDeveloperRoute>
+              <MobileNotificationsPageWrapper />
+            </AgentOrDeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/mobile/language" 
-        element={user ? <MobileLanguagePageWrapper /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AgentOrDeveloperRoute>
+              <MobileLanguagePageWrapper />
+            </AgentOrDeveloperRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/developer/:developerId" 
@@ -213,42 +434,114 @@ const AuthRouter: React.FC = () => {
         element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
       />
       
-      {/* Admin Routes */}
+      {/* Admin Routes - Only accessible by admins */}
       <Route 
         path="/admin" 
-        element={user ? <AdminDashboardPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/organizations" 
-        element={user ? <AdminOrganizationsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminOrganizationsPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/organizations/:organizationId" 
-        element={user ? <AdminOrganizationDetailsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminOrganizationDetailsPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/organizations/:organizationId/edit" 
-        element={user ? <AdminOrganizationEditPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminOrganizationEditPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/projects" 
-        element={user ? <AdminProjectsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminProjectsPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/projects/create" 
-        element={user ? <AdminCreateProjectPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminCreateProjectPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/projects/:projectId/edit" 
-        element={user ? <AdminProjectEditPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminProjectEditPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/leads" 
-        element={user ? <AdminLeadsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminLeadsPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       <Route 
         path="/admin/analytics" 
-        element={user ? <AdminAnalyticsPage /> : <Navigate to="/login" replace />} 
+        element={
+          user ? (
+            <AdminRoute>
+              <AdminAnalyticsPage />
+            </AdminRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
       
       <Route 

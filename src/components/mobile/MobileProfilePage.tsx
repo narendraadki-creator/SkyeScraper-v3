@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
+import { getRoleBasedBackPath, getRoleBasedSharedPagePath } from '../../utils/rolePermissions';
 import { 
   User,
   Mail,
@@ -19,12 +20,13 @@ import {
   Settings
 } from 'lucide-react';
 
-interface MobileAgentProfilePageProps {
+interface MobileProfilePageProps {
   className?: string;
 }
 
-export const MobileAgentProfilePage: React.FC<MobileAgentProfilePageProps> = ({ className = '' }) => {
+export const MobileProfilePage: React.FC<MobileProfilePageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, role } = useAuth();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export const MobileAgentProfilePage: React.FC<MobileAgentProfilePageProps> = ({ 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleBack = () => {
-    navigate('/mobile/agent');
+    navigate(getRoleBasedBackPath(role || 'agent', location.pathname));
   };
 
   const handleEdit = () => {
@@ -699,10 +701,12 @@ export const MobileAgentProfilePage: React.FC<MobileAgentProfilePageProps> = ({ 
             <button
               key={item.id}
               onClick={() => {
-                if (item.id === 'home') navigate('/mobile/developer');
-                else if (item.id === 'leads') navigate('/mobile/leads');
-                else if (item.id === 'promotions') navigate('/mobile/promotions');
-                else if (item.id === 'settings') navigate('/mobile/settings');
+                // Use role-based navigation
+                const basePath = role === 'developer' ? '/mobile/dev' : '/mobile/agent';
+                if (item.id === 'home') navigate(basePath);
+                else if (item.id === 'leads') navigate(`${basePath}/leads`);
+                else if (item.id === 'promotions') navigate(`${basePath}/promotion`);
+                else if (item.id === 'settings') navigate(`${basePath}/settings`);
               }}
               style={{
                 display: 'flex',
@@ -732,8 +736,8 @@ export const MobileAgentProfilePage: React.FC<MobileAgentProfilePageProps> = ({ 
         </div>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };
