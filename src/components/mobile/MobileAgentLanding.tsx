@@ -428,8 +428,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   };
 
   const handleViewDeveloper = (developer: DeveloperWithStats) => {
-    // Navigate to developer details or projects
-    navigate(`/developer/${developer.id}`);
+    // Navigate to agent-specific developer details page
+    navigate(`/mobile/agent/developer/${developer.id}`);
   };
 
   const formatCurrency = (amount: number) => {
