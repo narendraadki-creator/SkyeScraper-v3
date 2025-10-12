@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Project } from '../../types/project';
@@ -10,16 +9,7 @@ import {
   Building, 
   DollarSign, 
   Calendar,
-  Users,
-  Eye,
-  Star,
-  Filter,
-  Menu,
-  Bell,
-  Share2,
-  Heart,
   ChevronDown,
-  ChevronRight,
   Home
 } from 'lucide-react';
 
@@ -39,12 +29,10 @@ interface MobileAgentLandingProps {
   className?: string;
 }
 
-export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ className = '' }) => {
+export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
   const [developers, setDevelopers] = useState<DeveloperWithStats[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [filteredDevelopers, setFilteredDevelopers] = useState<DeveloperWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,8 +44,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     bathrooms: '',
     project_status: ''
   });
-  const [showFilters, setShowFilters] = useState(false);
-  const [searchResults, setSearchResults] = useState<'developers' | 'projects'>('developers');
   const [dropdownOptions, setDropdownOptions] = useState({
     locations: [] as string[],
     propertyTypes: [] as string[],
@@ -101,11 +87,11 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
   const extractDropdownOptions = () => {
     if (projects.length === 0) return;
 
-    // Extract unique locations
-    const locations = [...new Set(projects.map(p => p.location).filter(Boolean))].sort();
+            // Extract unique locations
+            const locations = [...new Set(projects.map(p => p.location).filter((loc): loc is string => Boolean(loc)))].sort();
     
     // Extract unique property types
-    const propertyTypes = [...new Set(projects.map(p => p.project_type).filter(Boolean))].sort();
+    const propertyTypes = [...new Set(projects.map(p => p.project_type).filter((type): type is string => Boolean(type)))].sort();
     
     // Extract unique statuses
     const statuses = [...new Set(projects.map(p => p.status).filter(Boolean))].sort();
@@ -130,7 +116,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     if (prices.length === 0) return ['Under 500K', '500K - 1M', '1M - 2M', 'Over 2M'];
     
     const min = Math.min(...prices);
-    const max = Math.max(...prices);
     
     const ranges = [];
     
@@ -322,8 +307,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
       }
     }
 
-    setFilteredProjects(filtered);
-
     // Now create filtered developers with project counts
     createFilteredDevelopers(filtered);
   };
@@ -393,7 +376,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
 
   const handleSearch = () => {
     // Always show developers with project counts, regardless of search
-    setSearchResults('developers');
     applyFilters();
   };
 
@@ -420,20 +402,9 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     }
   };
 
-  const getFilterKey = (label: string): string => {
-    switch (label) {
-      case 'Location': return 'location';
-      case 'Type': return 'property_type';
-      case 'Price Range': return 'price_range';
-      case 'Bedrooms': return 'bedrooms';
-      case 'Status': return 'project_status';
-      default: return '';
-    }
-  };
 
   const clearSearch = () => {
     setSearchTerm('');
-    setSearchResults('developers');
     setFilters({
       location: '',
       property_type: '',
@@ -468,14 +439,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     });
   };
 
-  const getAvailabilityBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Available': return 'success';
-      case 'Few Units Left': return 'warning';
-      case 'Sold Out': return 'danger';
-      default: return 'success';
-    }
-  };
 
   return (
     <div style={{ 
@@ -876,179 +839,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
             ) : (
               // Developer Cards with Project Counts
               filteredDevelopers.map((developer) => (
-                <div
-                  key={developer.id}
-                  style={{
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                    border: '1px solid rgba(1, 106, 93, 0.1)',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}
-                  onClick={() => handleViewDeveloper(developer)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-6px)';
-                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(1, 106, 93, 0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
-                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
-                  }}
-                >
-                  {/* Availability Badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '20px',
-                    left: '20px',
-                    padding: '6px 12px',
-                    borderRadius: '20px',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    backgroundColor: '#E8F5E8',
-                    color: '#016A5D',
-                    border: '1px solid rgba(1, 106, 93, 0.2)',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}>
-                    {developer.availability_status}
-                  </div>
-
-                  {/* Project Type Icon */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    width: '48px',
-                    height: '48px',
-                    backgroundColor: '#F0F9F8',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#016A5D',
-                    border: '1px solid rgba(1, 106, 93, 0.15)'
-                  }}>
-                    <Building size={24} />
-                  </div>
-
-                  {/* Developer Name */}
-                  <h3 style={{
-                    fontSize: '22px',
-                    fontWeight: '700',
-                    color: '#333333',
-                    margin: '0 0 8px 0',
-                    lineHeight: '1.3',
-                    paddingTop: '12px',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}>
-                    {developer.name}
-                  </h3>
-
-                  {/* Project Count */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginBottom: '16px'
-                  }}>
-                    <Building size={16} color="#016A5D" />
-                    <span style={{
-                      fontSize: '16px',
-                      color: '#016A5D',
-                      fontWeight: '600',
-                      fontFamily: 'Montserrat, sans-serif'
-                    }}>
-                      {developer.projects_count} Project{developer.projects_count !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-
-                  {/* Location */}
-                  {developer.primary_location && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '16px'
-                    }}>
-                      <MapPin size={16} color="#777777" />
-                      <span style={{
-                        fontSize: '14px',
-                        color: '#777777',
-                        fontFamily: 'Montserrat, sans-serif'
-                      }}>
-                        {developer.primary_location}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Starting Price */}
-                  {developer.min_starting_price && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '16px'
-                    }}>
-                      <DollarSign size={16} color="#016A5D" />
-                      <span style={{
-                        fontSize: '16px',
-                        color: '#016A5D',
-                        fontWeight: '600',
-                        fontFamily: 'Montserrat, sans-serif'
-                      }}>
-                        Starting from AED {developer.min_starting_price.toLocaleString()}K
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Possession Date */}
-                  {developer.earliest_possession_date && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '16px'
-                    }}>
-                      <Calendar size={16} color="#777777" />
-                      <span style={{
-                        fontSize: '14px',
-                        color: '#777777',
-                        fontFamily: 'Montserrat, sans-serif'
-                      }}>
-                        {formatDate(developer.earliest_possession_date)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* View Projects Button */}
-                  <button style={{
-                    width: '100%',
-                    padding: '12px 20px',
-                    backgroundColor: '#016A5D',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}>
-                    View Projects
-                  </button>
-                </div>
-              ))
-              )
-            ) : (
-              // Show all developers when no search/filters (same as filtered developers)
-              filteredDevelopers.length > 0 ? filteredDevelopers.map((developer) => (
               <div
                 key={developer.id}
                 style={{
@@ -1210,36 +1000,7 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
                   )}
                 </div>
               </div>
-            )) : (
-              // No developers available
-              <div style={{
-                gridColumn: '1 / -1',
-                textAlign: 'center',
-                padding: '60px 20px',
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                border: '1px solid rgba(1, 106, 93, 0.1)'
-              }}>
-                <Building size={48} color="#777777" style={{ marginBottom: '16px' }} />
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  color: '#333333',
-                  marginBottom: '8px',
-                  fontFamily: 'Montserrat, sans-serif'
-                }}>
-                  No Developers Available
-                </h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#777777',
-                  fontFamily: 'Montserrat, sans-serif'
-                }}>
-                  No developers with projects available at the moment.
-                </p>
-              </div>
-            )
+            ))
             )}
           </div>
         )}
