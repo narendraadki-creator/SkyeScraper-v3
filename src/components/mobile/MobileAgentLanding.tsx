@@ -130,116 +130,111 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   const loadDevelopers = async () => {
     setLoading(true);
     try {
-      console.log('Loading developers from organizations table...');
+      console.log('Loading developers from Projects table developer_name column...');
       
-      // Import supabase directly to query organizations
+      // Import supabase directly to query projects
       const { supabase } = await import('../../lib/supabase');
       
-      // Get all developer organizations
-      const { data: organizations, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('type', 'developer')
-        .order('name');
+      // Get all unique developers from projects table
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
+        .select('developer_name, starting_price, handover_date, location, status')
+        .eq('status', 'published')
+        .order('developer_name');
 
-      if (orgError) {
-        console.error('Error fetching organizations:', orgError);
-        throw orgError;
+      if (projectsError) {
+        console.error('Error fetching projects:', projectsError);
+        throw projectsError;
       }
 
-      console.log('Organizations loaded:', organizations);
+      console.log('Projects loaded for developers:', projects);
 
-      if (!organizations || organizations.length === 0) {
-        console.log('No organizations found');
-        setDevelopers([]);
-        return;
-      }
+      // Group projects by developer_name
+      const developerMap = new Map<string, {
+        name: string;
+        projects: any[];
+      }>();
 
-      // Get all published projects to calculate stats
-      const projects = await projectService.listProjects({ status: 'published' });
-      console.log('Projects loaded:', projects);
-      console.log('Project organization IDs:', projects.map(p => ({ name: p.name, org_id: p.organization_id })));
-
-      // Convert organizations to developer stats
-      const developersData: DeveloperWithStats[] = await Promise.all(
-        organizations.map(async (org) => {
-          // Get projects for this organization
-          const orgProjects = projects.filter(project => project.organization_id === org.id);
-          const projects_count = orgProjects.length;
-          
-          console.log(`Developer: ${org.name} (${org.id}) - Projects: ${projects_count}`);
-          if (orgProjects.length > 0) {
-            console.log(`  Project names: ${orgProjects.map(p => p.name).join(', ')}`);
+      projects?.forEach(project => {
+        if (project.developer_name) {
+          if (!developerMap.has(project.developer_name)) {
+            developerMap.set(project.developer_name, {
+              name: project.developer_name,
+              projects: []
+            });
           }
-          
-          // Find minimum starting price
-          const prices = orgProjects
-            .map(p => p.starting_price)
-            .filter(price => price && price > 0);
-          const min_starting_price = prices.length > 0 ? Math.min(...prices) : undefined;
+          developerMap.get(project.developer_name)!.projects.push(project);
+        }
+      });
 
-          // Find earliest possession date
-          const dates = orgProjects
-            .map(p => p.completion_date)
-            .filter(date => date)
-            .map(date => new Date(date!))
-            .filter(date => !isNaN(date.getTime()));
-          const earliest_possession_date = dates.length > 0 
-            ? new Date(Math.min(...dates.map(d => d.getTime()))).toISOString().split('T')[0]
-            : undefined;
+      console.log('Developer map:', developerMap);
 
-          // Find primary location (most common location)
-          const locations = orgProjects
-            .map(p => p.location)
-            .filter(loc => loc);
-          const locationCounts = locations.reduce((acc, loc) => {
-            acc[loc] = (acc[loc] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>);
-          const primary_location = Object.keys(locationCounts).length > 0
-            ? Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b)
-            : org.address || undefined;
+      // Convert to DeveloperWithStats format
+      const developersWithStats: DeveloperWithStats[] = Array.from(developerMap.values()).map(dev => {
+        const projects = dev.projects;
+        const projects_count = projects.length;
+        
+        console.log(`Developer: ${dev.name} - Projects: ${projects_count}`);
+        
+        // Calculate aggregated data from all projects
+        const prices = projects
+          .map(p => p.starting_price)
+          .filter(price => price && price > 0);
+        const min_starting_price = prices.length > 0 ? Math.min(...prices) : undefined;
 
-          // Calculate availability status
-          let availability_status: 'Available' | 'Few Units Left' | 'Sold Out' = 'Available';
-          const totalUnits = orgProjects.reduce((sum, p) => sum + (p.total_units || 0), 0);
-          const totalLeads = orgProjects.reduce((sum, p) => sum + (p.leads_count || 0), 0);
-          
-          if (totalUnits === 0) {
-            availability_status = 'Available'; // Default to Available if no units data
-          } else if (totalLeads >= totalUnits * 0.8) {
-            availability_status = 'Few Units Left';
-          } else if (totalLeads >= totalUnits * 0.5) {
-            availability_status = 'Available';
-          }
+        // Find earliest possession date
+        const dates = projects
+          .map(p => p.handover_date)
+          .filter(date => date)
+          .map(date => new Date(date!))
+          .filter(date => !isNaN(date.getTime()));
+        const earliest_possession_date = dates.length > 0 
+          ? new Date(Math.min(...dates.map(d => d.getTime()))).toISOString().split('T')[0]
+          : undefined;
 
-          return {
-            id: org.id,
-            name: org.name,
-            description: org.description || `${org.name} - Real estate development company`,
-            logo_url: org.logo_url,
-            projects_count,
-            min_starting_price,
-            earliest_possession_date,
-            primary_location,
-            availability_status
-          };
-        })
-      );
+        // Find primary location (most common location)
+        const locations = projects
+          .map(p => p.location)
+          .filter(loc => loc);
+        const locationCounts = locations.reduce((acc, loc) => {
+          acc[loc] = (acc[loc] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        const primary_location = Object.keys(locationCounts).length > 0
+          ? Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b)
+          : projects[0]?.location || '';
 
-      // Filter out developers with 0 projects
-      const developersWithProjects = developersData.filter(dev => dev.projects_count > 0);
-      
+        // Determine availability status
+        let availability_status: 'Available' | 'Few Units Left' | 'Sold Out' = 'Available';
+        if (projects_count === 0) {
+          availability_status = 'Sold Out';
+        } else if (projects_count <= 2) {
+          availability_status = 'Few Units Left';
+        }
+
+        return {
+          id: `dev-${dev.name.toLowerCase().replace(/\s+/g, '-')}`, // Generate ID from name
+          name: dev.name,
+          description: 'Premium residential and commercial developments',
+          logo_url: '',
+          projects_count,
+          min_starting_price,
+          earliest_possession_date,
+          primary_location,
+          availability_status,
+        };
+      });
+
       // Sort by project count (descending), then by name
-      developersWithProjects.sort((a, b) => {
+      developersWithStats.sort((a, b) => {
         if (b.projects_count !== a.projects_count) {
           return b.projects_count - a.projects_count;
         }
         return a.name.localeCompare(b.name);
       });
-      
-      console.log('Developers with projects:', developersWithProjects);
-      setDevelopers(developersWithProjects);
+
+      console.log(`Loaded ${developersWithStats.length} developers from projects table:`, developersWithStats);
+      setDevelopers(developersWithStats);
     } catch (error) {
       console.error('Failed to load developers:', error);
     } finally {
@@ -312,64 +307,78 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   };
 
   const createFilteredDevelopers = (filteredProjects: Project[]) => {
-    // Group projects by developer/organization
-    const developerProjectMap = new Map<string, {
-      developer: DeveloperWithStats;
-      projects: Project[];
-    }>();
+    // Group filtered projects by developer_name
+    const developerProjectMap = new Map<string, Project[]>();
 
-    // First, add all existing developers
-    developers.forEach(dev => {
-      developerProjectMap.set(dev.id, {
-        developer: { ...dev, projects_count: 0 },
-        projects: []
-      });
-    });
-
-    // Then, add projects to their respective developers
     filteredProjects.forEach(project => {
-      // Find developer by organization_id or developer_name
-      const developerEntry = Array.from(developerProjectMap.values()).find(entry => 
-        entry.developer.id === project.organization_id || 
-        entry.developer.name === project.developer_name
-      );
-
-      if (developerEntry) {
-        developerEntry.projects.push(project);
-      } else {
-        // Create new developer entry if not found
-        const newDeveloper: DeveloperWithStats = {
-          id: project.organization_id || `dev-${project.developer_name}`,
-          name: project.developer_name || 'Unknown Developer',
-          description: '',
-          logo_url: '',
-          projects_count: 1,
-          min_starting_price: project.starting_price,
-          earliest_possession_date: project.completion_date,
-          primary_location: project.location,
-          availability_status: 'Available'
-        };
-        
-        developerProjectMap.set(newDeveloper.id, {
-          developer: newDeveloper,
-          projects: [project]
-        });
+      if (project.developer_name) {
+        if (!developerProjectMap.has(project.developer_name)) {
+          developerProjectMap.set(project.developer_name, []);
+        }
+        developerProjectMap.get(project.developer_name)!.push(project);
       }
     });
 
-    // Update project counts and filter out developers with no matching projects
-    const filteredDevelopersWithCounts = Array.from(developerProjectMap.values())
-      .filter(entry => entry.projects.length > 0)
-      .map(entry => ({
-        ...entry.developer,
-        projects_count: entry.projects.length,
-        min_starting_price: Math.min(...entry.projects.map(p => p.starting_price || Infinity)),
-        earliest_possession_date: entry.projects
-          .map(p => p.completion_date)
-          .filter(Boolean)
-          .sort()[0],
-        primary_location: entry.projects[0]?.location || entry.developer.primary_location
-      }));
+    // Convert to DeveloperWithStats format
+    const filteredDevelopersWithCounts: DeveloperWithStats[] = Array.from(developerProjectMap.entries()).map(([developerName, projects]) => {
+      const projects_count = projects.length;
+      
+      // Calculate aggregated data from filtered projects
+      const prices = projects
+        .map(p => p.starting_price)
+        .filter(price => price && price > 0);
+      const min_starting_price = prices.length > 0 ? Math.min(...prices) : undefined;
+
+      // Find earliest possession date
+      const dates = projects
+        .map(p => p.completion_date)
+        .filter(date => date)
+        .map(date => new Date(date!))
+        .filter(date => !isNaN(date.getTime()));
+      const earliest_possession_date = dates.length > 0 
+        ? new Date(Math.min(...dates.map(d => d.getTime()))).toISOString().split('T')[0]
+        : undefined;
+
+      // Find primary location (most common location)
+      const locations = projects
+        .map(p => p.location)
+        .filter(loc => loc);
+      const locationCounts = locations.reduce((acc, loc) => {
+        acc[loc] = (acc[loc] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const primary_location = Object.keys(locationCounts).length > 0
+        ? Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b)
+        : projects[0]?.location || '';
+
+      // Determine availability status
+      let availability_status: 'Available' | 'Few Units Left' | 'Sold Out' = 'Available';
+      if (projects_count === 0) {
+        availability_status = 'Sold Out';
+      } else if (projects_count <= 2) {
+        availability_status = 'Few Units Left';
+      }
+
+      return {
+        id: `dev-${developerName.toLowerCase().replace(/\s+/g, '-')}`,
+        name: developerName,
+        description: 'Premium residential and commercial developments',
+        logo_url: '',
+        projects_count,
+        min_starting_price,
+        earliest_possession_date,
+        primary_location,
+        availability_status,
+      };
+    });
+
+    // Sort by project count (descending), then by name
+    filteredDevelopersWithCounts.sort((a, b) => {
+      if (b.projects_count !== a.projects_count) {
+        return b.projects_count - a.projects_count;
+      }
+      return a.name.localeCompare(b.name);
+    });
 
     setFilteredDevelopers(filteredDevelopersWithCounts);
   };
