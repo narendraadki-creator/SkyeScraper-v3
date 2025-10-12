@@ -43,6 +43,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
   const navigate = useNavigate();
   const { user, role } = useAuth();
   const [developers, setDevelopers] = useState<DeveloperWithStats[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
@@ -54,10 +56,17 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     project_status: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [searchResults, setSearchResults] = useState<'developers' | 'projects'>('developers');
 
   useEffect(() => {
     loadDevelopers();
+    loadProjects();
   }, []);
+
+  // Update filtered projects when projects or filters change
+  useEffect(() => {
+    applyFilters();
+  }, [projects, filters]);
 
   const loadDevelopers = async () => {
     setLoading(true);
@@ -179,9 +188,76 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     }
   };
 
+  const loadProjects = async () => {
+    try {
+      console.log('Loading projects...');
+      const projectsData = await projectService.listProjects();
+      setProjects(projectsData);
+      console.log('Loaded projects:', projectsData.length);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...projects];
+
+    // Apply search term
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(project => 
+        project.name.toLowerCase().includes(searchLower) ||
+        project.location.toLowerCase().includes(searchLower) ||
+        project.developer_name?.toLowerCase().includes(searchLower) ||
+        project.id.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply filters
+    if (filters.location) {
+      filtered = filtered.filter(project => 
+        project.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    if (filters.property_type) {
+      filtered = filtered.filter(project => 
+        project.project_type?.toLowerCase().includes(filters.property_type.toLowerCase())
+      );
+    }
+
+    if (filters.project_status) {
+      filtered = filtered.filter(project => 
+        project.status === filters.project_status
+      );
+    }
+
+    if (filters.price_range) {
+      const priceRanges = {
+        'under-500k': (price: number) => price < 500000,
+        '500k-1m': (price: number) => price >= 500000 && price <= 1000000,
+        '1m-2m': (price: number) => price > 1000000 && price <= 2000000,
+        'over-2m': (price: number) => price > 2000000
+      };
+      
+      const rangeFilter = priceRanges[filters.price_range as keyof typeof priceRanges];
+      if (rangeFilter) {
+        filtered = filtered.filter(project => 
+          project.starting_price && rangeFilter(project.starting_price)
+        );
+      }
+    }
+
+    setFilteredProjects(filtered);
+  };
+
   const handleSearch = () => {
-    // Filter developers based on search term and filters
-    loadDevelopers();
+    if (searchTerm.trim()) {
+      setSearchResults('projects');
+    } else {
+      setSearchResults('developers');
+    }
+    applyFilters();
   };
 
   const handleFilterChange = (key: string, value: string) => {
@@ -189,6 +265,19 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
       ...prev,
       [key]: value,
     }));
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults('developers');
+    setFilters({
+      location: '',
+      property_type: '',
+      price_range: '',
+      bedrooms: '',
+      bathrooms: '',
+      project_status: ''
+    });
   };
 
   const handleViewDeveloper = (developer: DeveloperWithStats) => {
@@ -301,6 +390,21 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
                 fontFamily: 'Montserrat, sans-serif'
               }}
             />
+            {searchTerm && (
+              <button
+                onClick={clearSearch}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#777777',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '4px'
+                }}
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
@@ -377,7 +481,11 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
             margin: '0 0 8px 0',
             fontFamily: 'Montserrat, sans-serif'
           }}>
-            Featured Developers
+            {searchResults === 'projects' ? (
+              searchTerm ? `Search Results (${filteredProjects.length})` : 'All Projects'
+            ) : (
+              'Featured Developers'
+            )}
           </h2>
           <p style={{
             fontSize: '16px',
@@ -386,7 +494,11 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
             fontWeight: '300',
             fontFamily: 'Montserrat, sans-serif'
           }}>
-            Discover properties from India's leading developers
+            {searchResults === 'projects' ? (
+              searchTerm ? `Found ${filteredProjects.length} projects matching "${searchTerm}"` : 'Browse all available projects'
+            ) : (
+              'Discover properties from India\'s leading developers'
+            )}
           </p>
         </div>
 
@@ -440,14 +552,226 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
             </p>
           </div>
         ) : (
-          /* Developer Cards Grid - Premium Design */
+          /* Results Grid - Shows Developers or Projects */
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
             gap: '24px',
             margin: '0 auto'
           }}>
-            {developers.map((developer) => (
+            {searchResults === 'projects' ? (
+              filteredProjects.length === 0 ? (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                  border: '1px solid rgba(1, 106, 93, 0.1)'
+                }}>
+                  <Search size={48} color="#777777" style={{ marginBottom: '16px' }} />
+                  <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: '#333333',
+                    marginBottom: '8px',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    No Projects Found
+                  </h3>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#777777',
+                    marginBottom: '20px',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {searchTerm ? `No projects match "${searchTerm}"` : 'No projects available'}
+                  </p>
+                  <button
+                    onClick={clearSearch}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#016A5D',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              ) : (
+              // Project Cards
+              filteredProjects.map((project) => (
+                <div
+                  key={project.id}
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    border: '1px solid rgba(1, 106, 93, 0.1)',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}
+                  onClick={() => navigate(`/mobile/agent/project/${project.id}`)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-6px)';
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(1, 106, 93, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                  }}
+                >
+                  {/* Status Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    padding: '6px 12px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    backgroundColor: project.status === 'published' ? '#E8F5E8' : '#FFF3CD',
+                    color: project.status === 'published' ? '#016A5D' : '#856404',
+                    border: `1px solid ${project.status === 'published' ? 'rgba(1, 106, 93, 0.2)' : 'rgba(133, 100, 4, 0.2)'}`,
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {project.status}
+                  </div>
+
+                  {/* Project Type Icon */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    width: '48px',
+                    height: '48px',
+                    backgroundColor: '#F0F9F8',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#016A5D',
+                    border: '1px solid rgba(1, 106, 93, 0.15)'
+                  }}>
+                    <Building size={24} />
+                  </div>
+
+                  {/* Project Name */}
+                  <h3 style={{
+                    fontSize: '22px',
+                    fontWeight: '700',
+                    color: '#333333',
+                    margin: '0 0 8px 0',
+                    lineHeight: '1.3',
+                    paddingTop: '12px',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {project.name}
+                  </h3>
+
+                  {/* Developer Name */}
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#016A5D',
+                    margin: '0 0 12px 0',
+                    fontWeight: '600',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {project.developer_name || 'Developer'}
+                  </p>
+
+                  {/* Location */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <MapPin size={16} color="#777777" />
+                    <span style={{
+                      fontSize: '14px',
+                      color: '#777777',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      {project.location}
+                    </span>
+                  </div>
+
+                  {/* Starting Price */}
+                  {project.starting_price && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '16px'
+                    }}>
+                      <DollarSign size={16} color="#016A5D" />
+                      <span style={{
+                        fontSize: '16px',
+                        color: '#016A5D',
+                        fontWeight: '600',
+                        fontFamily: 'Montserrat, sans-serif'
+                      }}>
+                        Starting from AED {project.starting_price.toLocaleString()}K
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Project Type */}
+                  {project.project_type && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '16px'
+                    }}>
+                      <Building size={16} color="#777777" />
+                      <span style={{
+                        fontSize: '14px',
+                        color: '#777777',
+                        fontFamily: 'Montserrat, sans-serif'
+                      }}>
+                        {project.project_type}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* View Details Button */}
+                  <button style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    backgroundColor: '#016A5D',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    View Details
+                  </button>
+                </div>
+              ))
+              )
+            ) : (
+              // Developer Cards
+              developers.map((developer) => (
               <div
                 key={developer.id}
                 style={{
@@ -609,7 +933,8 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
                   )}
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         )}
       </div>
