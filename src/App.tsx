@@ -3,38 +3,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { AuthTestPage } from './pages/AuthTestPage';
-import { SimpleTestPage } from './pages/SimpleTestPage';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { CreateProjectPage } from './pages/CreateProjectPage';
-import { ProjectDetailsPage } from './pages/ProjectDetailsPage';
-import { ProjectEditPage } from './pages/ProjectEditPage';
-import { UnitsPage } from './pages/UnitsPage';
-import { UnitDetailsPage } from './pages/UnitDetailsPage';
-import { LeadsPage } from './pages/LeadsPage';
-import { AgentProjectsPage } from './pages/AgentProjectsPage';
-import { CreateLeadPage } from './pages/CreateLeadPage';
-import { AdminDashboardPage } from './pages/AdminDashboardPage';
-import { AdminOrganizationsPage } from './pages/AdminOrganizationsPage';
-import { AdminOrganizationDetailsPage } from './pages/AdminOrganizationDetailsPage';
-import { AdminOrganizationEditPage } from './pages/AdminOrganizationEditPage';
 import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
 import { 
-  RoleBasedRoute, 
   AgentRoute, 
   DeveloperRoute, 
-  AdminRoute, 
-  DeveloperOrAdminRoute, 
   AgentOrDeveloperRoute 
 } from './components/auth/RoleBasedRoute';
-import { AdminProjectsPage } from './pages/AdminProjectsPage';
-import { AdminCreateProjectPage } from './pages/AdminCreateProjectPage';
-import { AdminProjectEditPage } from './pages/AdminProjectEditPage';
-import { AdminLeadsPage } from './pages/AdminLeadsPage';
-import { AdminAnalyticsPage } from './pages/AdminAnalyticsPage';
-import { AuthDebugPage } from './pages/AuthDebugPage';
-import { ClearAuthPage } from './pages/ClearAuthPage';
 import { MobileAgentPage } from './pages/MobileAgentPage';
 import { MobileDeveloperDashboardPage } from './pages/MobileDeveloperDashboardPage';
 import { MobileProjectEditPage } from './pages/MobileProjectEditPage';
@@ -80,64 +54,6 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/register" 
         element={user ? <RoleBasedRedirect /> : <RegisterPage />} 
-      />
-      <Route 
-        path="/auth-test" 
-        element={<AuthTestPage />} 
-      />
-      <Route 
-        path="/test" 
-        element={<SimpleTestPage />} 
-      />
-      <Route 
-        path="/mobile-test" 
-        element={<MobileAgentPromotionsPage />} 
-      />
-      
-      {/* Protected routes */}
-      <Route 
-        path="/dashboard" 
-        element={user ? <DashboardPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/developer" 
-        element={user ? <DashboardPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects" 
-        element={user ? <ProjectsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects/create" 
-        element={user ? <CreateProjectPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects/:id" 
-        element={user ? <ProjectDetailsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects/:id/edit" 
-        element={user ? <ProjectEditPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects/:projectId/units" 
-        element={user ? <UnitsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/projects/:projectId/units/:unitId" 
-        element={user ? <UnitDetailsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/leads" 
-        element={user ? <LeadsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/agent-projects" 
-        element={user ? <AgentProjectsPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/leads/create/:projectId" 
-        element={user ? <CreateLeadPage /> : <Navigate to="/login" replace />} 
       />
       
       {/* Mobile Routes - Role-Based Protection */}
@@ -432,125 +348,6 @@ const AuthRouter: React.FC = () => {
       <Route 
         path="/project/:projectId" 
         element={user ? <PropertyDetailsPageWrapper /> : <Navigate to="/login" replace />} 
-      />
-      
-      {/* Admin Routes - Only accessible by admins */}
-      <Route 
-        path="/admin" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminDashboardPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/organizations" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminOrganizationsPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/organizations/:organizationId" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminOrganizationDetailsPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/organizations/:organizationId/edit" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminOrganizationEditPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/projects" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminProjectsPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/projects/create" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminCreateProjectPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/projects/:projectId/edit" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminProjectEditPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/leads" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminLeadsPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      <Route 
-        path="/admin/analytics" 
-        element={
-          user ? (
-            <AdminRoute>
-              <AdminAnalyticsPage />
-            </AdminRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      
-      <Route 
-        path="/auth-debug" 
-        element={user ? <AuthDebugPage /> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/clear-auth" 
-        element={<ClearAuthPage />} 
       />
       
       {/* Default redirect */}
