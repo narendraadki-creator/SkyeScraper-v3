@@ -52,6 +52,10 @@ export interface CreateLeadData {
 }
 
 export interface UpdateLeadData {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
   status?: LeadStatus;
   stage?: LeadStage;
   notes?: string;
@@ -67,7 +71,7 @@ export interface UpdateLeadData {
 }
 
 export interface LeadFilters {
-  status?: LeadStatus;
+  status?: LeadStatus | 'all';
   stage?: LeadStage;
   project_id?: string;
   assigned_to?: string;

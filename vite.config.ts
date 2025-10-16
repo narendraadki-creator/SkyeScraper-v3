@@ -17,6 +17,7 @@ export default defineConfig({
     postcss: './postcss.config.js',
   },
   server: {
+    port: 3000, // Run on port 3000
     // Reduce CPU usage for file watching
     watch: {
       usePolling: false,

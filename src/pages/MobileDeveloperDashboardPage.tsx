@@ -37,7 +37,7 @@ import type { Lead } from '../types/lead';
 
 const MobileDeveloperDashboardContent: React.FC = () => {
   const navigate = useNavigate();
-  const { user, employeeId, organizationId, role } = useAuth();
+  const { user, employeeId, organizationId, role, logout } = useAuth();
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -89,7 +89,14 @@ const MobileDeveloperDashboardContent: React.FC = () => {
   }, [organizationId]);
 
   const handleSignOut = async () => {
-    await import('../lib/supabase').then(({ supabase }) => supabase.auth.signOut());
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Navigate to login even if logout fails
+      navigate('/login');
+    }
   };
 
   const formatCurrency = (amount: number) => {

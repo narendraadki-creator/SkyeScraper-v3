@@ -11,12 +11,10 @@ import {
   MapPin, 
   DollarSign, 
   Calendar, 
-  FileText,
   Edit,
   Save,
   X,
   Building,
-  Home,
   Target,
   TrendingUp,
   User,
@@ -24,21 +22,19 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  ArrowLeft,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileLeadDetailsProps {
   className?: string;
 }
 
-export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className = '' }) => {
+export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = () => {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [lead, setLead] = useState<Lead | null>(null);
+  const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [updateData, setUpdateData] = useState<UpdateLeadData>({});
@@ -71,11 +67,46 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
         notes: leadData.notes,
         next_followup: leadData.next_followup
       });
+
+      // Load project information if project_id exists
+      if (leadData.project_id) {
+        try {
+          const { supabase } = await import('../../lib/supabase');
+          const { data: projectData, error: projectError } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('id', leadData.project_id)
+            .single();
+
+          if (projectError) {
+            console.error('Error loading project:', projectError);
+          } else {
+            setProject(projectData);
+            console.log('Project loaded:', projectData);
+          }
+        } catch (projectError) {
+          console.error('Failed to load project:', projectError);
+        }
+      }
     } catch (error) {
       console.error('Failed to load lead:', error);
       setError('Failed to load lead details. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleProjectClick = () => {
+    if (project && lead?.project_id) {
+      // Navigate to the project details page based on user role
+      if (role === 'agent') {
+        navigate(`/mobile/agent/project/${lead.project_id}`);
+      } else if (role === 'developer') {
+        navigate(`/mobile/dev/project/${lead.project_id}`);
+      } else {
+        // Default to agent route
+        navigate(`/mobile/agent/project/${lead.project_id}`);
+      }
     }
   };
 
@@ -762,6 +793,123 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
               </div>
             </div>
           </div>
+
+          {/* Project Information */}
+          {project && (
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(1, 106, 93, 0.1)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+            }}>
+              <h3 style={{ 
+                fontSize: '20px', 
+                fontWeight: '600', 
+                marginBottom: '20px', 
+                color: '#333333',
+                fontFamily: 'Montserrat, sans-serif'
+              }}>
+                Project Information
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '500', 
+                    color: '#333333',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    Project Name
+                  </label>
+                  <button
+                    onClick={handleProjectClick}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      border: '1px solid rgba(1, 106, 93, 0.15)',
+                      borderRadius: '8px',
+                      backgroundColor: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      fontFamily: 'Montserrat, sans-serif',
+                      textAlign: 'left',
+                      width: '100%'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#F0F9F8';
+                      e.currentTarget.style.borderColor = '#016A5D';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.15)';
+                    }}
+                  >
+                    <Building size={20} color="#016A5D" />
+                    <span style={{ 
+                      fontSize: '18px', 
+                      color: '#016A5D',
+                      fontWeight: '600',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      {project.name}
+                    </span>
+                  </button>
+                </div>
+
+                {project.location && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ 
+                      fontSize: '16px', 
+                      fontWeight: '500', 
+                      color: '#333333',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      Project Location
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <MapPin size={20} color="#777777" />
+                      <span style={{ 
+                        fontSize: '18px', 
+                        color: '#333333',
+                        fontWeight: '500',
+                        fontFamily: 'Montserrat, sans-serif'
+                      }}>
+                        {project.location}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {project.developer_name && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ 
+                      fontSize: '16px', 
+                      fontWeight: '500', 
+                      color: '#333333',
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}>
+                      Developer
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Building size={20} color="#777777" />
+                      <span style={{ 
+                        fontSize: '18px', 
+                        color: '#333333',
+                        fontWeight: '500',
+                        fontFamily: 'Montserrat, sans-serif'
+                      }}>
+                        {project.developer_name}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Status & Stage */}
           <div style={{

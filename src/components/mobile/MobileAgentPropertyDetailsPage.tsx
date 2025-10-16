@@ -36,6 +36,7 @@ import {
   FileImage
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
+import { UnitAvailabilitySummary } from '../ui/UnitAvailabilitySummary';
 
 interface PropertyDetailsPageProps {
   className?: string;
@@ -82,12 +83,28 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
     if (!file || !project) return;
     try {
       setUploading(true);
-      await fileService.uploadFile(file, project.id, uploadPurpose);
+      
+      // Use smart unit processing for unit_data files
+      if (uploadPurpose === 'unit_data') {
+        const result = await fileService.processUnitDataFile(file, project.id);
+        setToast({ 
+          visible: true, 
+          text: `Unit data processed successfully! ${result.units.length} units analyzed.`, 
+          type: 'success' 
+        });
+      } else {
+        await fileService.uploadFile(file, project.id, uploadPurpose);
+        setToast({ visible: true, text: `${file.name} uploaded successfully`, type: 'success' });
+      }
+      
       await loadProjectData();
-      setToast({ visible: true, text: `${file.name} uploaded successfully`, type: 'success' });
     } catch (err) {
       console.error('Upload failed:', err);
-      setToast({ visible: true, text: 'Upload failed. Please try again.', type: 'error' });
+      setToast({ 
+        visible: true, 
+        text: `Upload failed: ${err instanceof Error ? err.message : 'Please try again.'}`, 
+        type: 'error' 
+      });
     }
     setUploading(false);
     setTimeout(() => setToast(t => ({ ...t, visible: false })), 2500);
@@ -98,6 +115,15 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
       loadProjectData();
     }
   }, [projectId]);
+  
+  // Debug: Log displayConfig whenever it changes
+  useEffect(() => {
+    console.log('DisplayConfig updated:', displayConfig);
+    console.log('DisplayConfig length:', displayConfig.length);
+    if (displayConfig.length > 0) {
+      console.log('First column:', displayConfig[0]);
+    }
+  }, [displayConfig]);
 
   // Reset visible units count when tab changes
   useEffect(() => {
@@ -119,7 +145,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
         .from('project_files')
         .select('*')
         .eq('project_id', projectId)
-        .in('file_purpose', ['brochure', 'floor_plan', 'image', 'document'])
+        // fetch ALL purposes; Developer interface shows everything
         .order('uploaded_at', { ascending: false });
 
       if (filesError) {
@@ -132,44 +158,47 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
 
       // Load units data
       try {
+        console.log('🔍 Starting to load units for project:', projectId);
         const unitsData = await unitService.getUnits(projectId!);
-        console.log('Units loaded:', unitsData);
+        console.log('✅ Units loaded:', unitsData);
+        console.log('📊 Units count:', unitsData.length);
+        if (unitsData.length > 0) {
+          console.log('📝 First unit sample:', unitsData[0]);
+          console.log('🔧 First unit custom_fields:', unitsData[0]?.custom_fields);
+        }
         setUnits(unitsData);
         
-        // Generate display config from units data
+        // Generate display config from units data with proper column ordering
         if (unitsData.length > 0) {
-          const customCols = new Set<string>();
-          unitsData.forEach(unit => {
-            if (unit.custom_fields) {
-              Object.keys(unit.custom_fields).forEach(key => {
-                customCols.add(key);
-              });
-            }
+          // Aggregate keys across all rows in the order they are encountered
+          const orderedKeys: string[] = [];
+          unitsData.forEach(u => {
+            const keys = Object.keys(u?.custom_fields || {});
+            keys.forEach(k => {
+              if (!orderedKeys.includes(k)) orderedKeys.push(k);
+            });
           });
-          
-          // Create display config with proper formatting
-          const generatedDisplayConfig = Array.from(customCols).map(col => {
-            // Determine data type based on sample values
-            const sampleValues = unitsData.slice(0, 5).map(unit => unit.custom_fields?.[col]).filter(v => v !== undefined);
-            let type = 'text';
-            
-            if (sampleValues.length > 0) {
-              const firstValue = sampleValues[0];
-              if (typeof firstValue === 'number' || (!isNaN(Number(firstValue)) && String(firstValue).includes('.'))) {
-                type = 'number';
-              } else if (String(firstValue).toLowerCase().includes('aed') || String(firstValue).includes(',')) {
-                type = 'currency';
-              }
+
+          const finalKeys = orderedKeys.length ? orderedKeys : Object.keys(unitsData[0]?.custom_fields || {});
+
+          const generatedDisplayConfig = finalKeys.map((key) => {
+            // Detect basic type (number/currency/text)
+            const sample = unitsData.find(u => u?.custom_fields && u.custom_fields[key])?.custom_fields?.[key];
+            let type: string = 'text';
+            if (typeof sample === 'number' || (!isNaN(Number(sample)) && sample !== '')) {
+              type = 'number';
             }
-            
+            if (String(key).toLowerCase().includes('price')) {
+              type = 'currency';
+            }
+
             return {
-              source: col,
-              label: col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              type: type
+              source: key,     // keep exact DB/Excel header key
+              label: key,      // render label exactly as in source
+              type
             };
           });
-          
-          console.log('Generated display config:', generatedDisplayConfig);
+
           setDisplayConfig(generatedDisplayConfig);
         }
       } catch (unitsError) {
@@ -250,6 +279,34 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
     const trimmedSource = source.trim();
     if (unit.custom_fields && unit.custom_fields[trimmedSource] !== undefined) {
       return unit.custom_fields[trimmedSource];
+    }
+    
+    // Check direct properties
+    if (unit[source as keyof Unit] !== undefined) {
+      return unit[source as keyof Unit];
+    }
+    
+    // Handle specific field mappings for Excel data
+    const fieldMappings: { [key: string]: string[] } = {
+      'no': ['no', 'number', 'row_number'],
+      'unit_number': ['unit_number', 'unit_number', 'unit_no'],
+      'number_of_rooms': ['number_of_rooms', 'bedrooms', 'rooms', 'bhk'],
+      'suite_sqf': ['suite_sqf', 'suite_area', 'area_suite'],
+      'balcony_sqf': ['balcony_sqf', 'balcony_area', 'area_balcony'],
+      'total_area_sqf': ['total_area_sqf', 'total_area', 'area_total'],
+      'unit_price': ['unit_price', 'price', 'unit_price'],
+      'two_years_payment_plan': ['two_years_payment_plan', 'payment_plan', '2_years_payment']
+    };
+    
+    // Try alternative field names
+    const alternatives = fieldMappings[source] || [];
+    for (const alt of alternatives) {
+      if (unit.custom_fields && unit.custom_fields[alt] !== undefined) {
+        return unit.custom_fields[alt];
+      }
+      if (unit[alt as keyof Unit] !== undefined) {
+        return unit[alt as keyof Unit];
+      }
     }
     
     return null;
@@ -506,6 +563,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                 flexWrap: 'wrap'
               }}>
                 {[
+                  { id: 'unit_data', label: 'Upload Unit Data' },
                   { id: 'brochure', label: 'Upload Brochure' },
                   { id: 'floor_plan', label: 'Upload Floor Plan' },
                   { id: 'image', label: 'Upload Image' },
@@ -513,7 +571,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                 ].map(btn => (
                   <button
                     key={btn.id}
-                    onClick={() => handleOpenFilePicker(btn.id as any)}
+                    onClick={() => projectId && handleOpenFilePicker(btn.id as any)}
                     style={{
                       padding: '10px 12px',
                       backgroundColor: 'var(--primary-600)',
@@ -579,7 +637,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                     {canUploadFiles(role) && (
                       <div style={{ marginTop: '12px' }}>
                         <button
-                          onClick={() => handleOpenFilePicker('brochure')}
+                          onClick={() => projectId && handleOpenFilePicker('brochure')}
                           style={{
                             padding: '10px 16px',
                             backgroundColor: 'var(--primary-600)',
@@ -813,37 +871,18 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
           }}>
             {units.length > 0 && displayConfig.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Summary Card */}
-                <div style={{
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  border: '1px solid var(--gray-200)',
-                  marginBottom: '8px'
-                }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: 'var(--gray-900)' }}>
-                    Unit Availability Summary
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Total Units:</span>
-                      <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-900)' }}>
-                        {units.length}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Available:</span>
-                      <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--green-600)' }}>
-                        {units.filter(u => u.status === 'available').length}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Leads Generated:</span>
-                      <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-900)' }}>
-                        {project.leads_count || 0}
-                      </span>
-                    </div>
-                  </div>
+                {/* Smart Unit Availability Summary */}
+                <div style={{ marginBottom: '20px' }}>
+                  {projectId && (
+                    <UnitAvailabilitySummary 
+                      projectId={projectId} 
+                      onDataLoaded={(summary) => {
+                        console.log('Unit summary loaded:', summary);
+                      }}
+                      onUploadClick={() => projectId && handleOpenFilePicker('unit_data')}
+                      canUpload={canUploadFiles(role)}
+                    />
+                  )}
                 </div>
 
                 {/* Units Table */}
@@ -857,6 +896,11 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                     <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--gray-900)' }}>
                       Available Units ({units.filter(u => u.status === 'available').length})
                     </h3>
+                    {displayConfig.length > 0 && (
+                      <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                        Columns: {displayConfig.map(col => col.label).join(', ')}
+                      </div>
+                    )}
                   </div>
                   
                   {/* Table */}
@@ -885,13 +929,19 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                         </tr>
                       </thead>
                       <tbody>
-                        {units.filter(u => u.status === 'available').slice(0, visibleUnitsCount).map((unit, unitIndex) => (
+                        {units.slice(0, visibleUnitsCount).map((unit, unitIndex) => (
                           <tr key={unit.id || unitIndex} style={{ 
                             borderBottom: '1px solid var(--gray-200)',
                             backgroundColor: unitIndex % 2 === 0 ? 'white' : 'var(--gray-25)'
                           }}>
                             {displayConfig.map((col, colIndex) => {
-                              const value = getValue(unit, col.source);
+                              let value = getValue(unit, col.source);
+                              
+                              // Handle special case for "No." column - use row index + 1
+                              if (col.source === 'no' && value === null) {
+                                value = unitIndex + 1;
+                              }
+                              
                               const formattedValue = formatValue(value, col.type);
                               
                               return (
@@ -901,8 +951,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                                     padding: '12px 8px',
                                     fontSize: '14px',
                                     color: 'var(--gray-900)',
-                                    whiteSpace: 'nowrap',
-                                    borderBottom: '1px solid var(--gray-100)'
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   {formattedValue}
@@ -1389,7 +1438,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
           ref={fileInputRef}
           type="file"
           style={{ display: 'none' }}
-          onChange={handleFileSelected}
+          onChange={projectId ? handleFileSelected : undefined}
         />
       )}
 

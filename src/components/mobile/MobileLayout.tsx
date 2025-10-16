@@ -40,9 +40,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         navigate('/mobile/settings');
         break;
       case 'logout':
-        // Handle logout
+        // This will be handled by individual components using the logout function
         console.log('Logout clicked');
-        navigate('/login');
         break;
     }
   };

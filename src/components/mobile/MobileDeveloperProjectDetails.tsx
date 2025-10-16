@@ -39,6 +39,7 @@ import {
   Plus
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
+import { UnitAvailabilitySummary } from '../ui/UnitAvailabilitySummary';
 
 interface MobileDeveloperProjectDetailsProps {
   className?: string;
@@ -142,33 +143,38 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
         console.log('Units loaded:', unitsData);
         setUnits(unitsData);
         
-        // Generate display config from units data
+        // Generate display config from units data with proper column ordering
         if (unitsData.length > 0) {
-          const customCols = new Set<string>();
-          unitsData.forEach(unit => {
-            if (unit.custom_fields) {
-              Object.keys(unit.custom_fields).forEach(key => {
-                if (key !== 'id' && key !== 'project_id') {
-                  customCols.add(key);
-                }
-              });
-            }
+          // Define the correct column order based on Excel file structure
+          const columnMapping = [
+            { key: 'no', label: 'No.', type: 'number', source: 'no' },
+            { key: 'unit_number', label: 'Unit Number', type: 'text', source: 'unit_number' },
+            { key: 'number_of_rooms', label: 'Number of Rooms', type: 'text', source: 'number_of_rooms' },
+            { key: 'suite_sqf', label: 'Suite/SQF', type: 'number', source: 'suite_sqf' },
+            { key: 'balcony_sqf', label: 'Balcony/SQF', type: 'number', source: 'balcony_sqf' },
+            { key: 'total_area_sqf', label: 'Total Area SQF', type: 'number', source: 'total_area_sqf' },
+            { key: 'unit_price', label: 'unit price', type: 'currency', source: 'unit_price' },
+            { key: 'two_years_payment_plan', label: '2 YEARS PAYMENT PLAN', type: 'currency', source: 'two_years_payment_plan' }
+          ];
+          
+          // Check which columns actually have data and create display config
+          const availableColumns = columnMapping.filter(col => {
+            return unitsData.some(unit => {
+              // Check both direct properties and custom_fields
+              return unit[col.source as keyof typeof unit] !== undefined || 
+                     unit.custom_fields?.[col.source] !== undefined ||
+                     unit.custom_fields?.[col.key] !== undefined;
+            });
           });
-
-          const config = Array.from(customCols).map(col => {
-            const sampleValue = unitsData.find(u => u.custom_fields?.[col])?.custom_fields?.[col];
-            let type = 'text';
-            if (typeof sampleValue === 'number') {
-              type = 'number';
-            } else if (typeof sampleValue === 'string' && sampleValue.includes('$')) {
-              type = 'currency';
-            }
-            return {
-              source: col,
-              label: col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              type
-            };
-          });
+          
+          // Map to display config format
+          const config = availableColumns.map(col => ({
+            source: col.source,
+            label: col.label,
+            type: col.type
+          }));
+          
+          console.log('Generated display config with proper ordering:', config);
           setDisplayConfig(config);
         }
       } catch (error) {
@@ -677,6 +683,18 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
       case 'availability':
         return (
           <div style={{ padding: '16px' }}>
+            {/* Smart Unit Availability Summary */}
+            <div style={{ marginBottom: '20px' }}>
+              {project?.id && (
+                <UnitAvailabilitySummary 
+                  projectId={project.id} 
+                  onDataLoaded={(summary) => {
+                    console.log('Unit summary loaded:', summary);
+                  }}
+                />
+              )}
+            </div>
+            
             {/* Unit Data Upload (uses existing Units import logic) */}
             {canManageUnits(role) && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>

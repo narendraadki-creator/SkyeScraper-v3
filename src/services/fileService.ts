@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { ProjectFile } from '../types/file';
+import { processUnitData, saveUnitData, type UnitRow, type UnitSummary } from './smartUnitService';
 
 // Supported file types
 const SUPPORTED_FILE_TYPES = {
@@ -140,6 +141,111 @@ export const fileService = {
     console.log('📊 Database response:', { data, error });
     if (error) throw error;
     return data || [];
+  },
+
+  // Process unit data from Excel/CSV files
+  async processUnitDataFile(
+    file: File,
+    projectId: string
+  ): Promise<{ units: UnitRow[]; summary: UnitSummary; fileRecord: ProjectFile }> {
+    console.log('🔄 Processing unit data file:', file.name);
+    
+    // First upload the file
+    const fileRecord = await this.uploadFile(file, projectId, 'unit_data');
+    
+    try {
+      // Parse the file content
+      const { data, headers } = await this.parseExcelOrCSV(file);
+      
+      if (!data || data.length === 0) {
+        throw new Error('No data found in the file');
+      }
+      
+      // Extract project name from the first row if it looks like a title
+      let projectName: string | undefined;
+      const firstRow = data[0];
+      if (firstRow && firstRow.length > 0 && typeof firstRow[0] === 'string') {
+        const firstCell = firstRow[0].toString().trim();
+        // Check if it looks like a project title (not a header)
+        if (firstCell.length > 3 && !headers.includes(firstCell) && !/unit|flat|bedroom|price|area/i.test(firstCell)) {
+          projectName = firstCell;
+          // Remove the title row from data
+          data.shift();
+        }
+      }
+      
+      console.log('📊 Parsed data:', { rows: data.length, headers, projectName });
+      
+      // Process with smart schema inference
+      const { units, summary } = await processUnitData(data, headers, projectName);
+      
+      console.log('🎯 Smart processing result:', { unitsCount: units.length, summary });
+      
+      // Save to database
+      await saveUnitData(projectId, units, summary);
+      
+      return { units, summary, fileRecord };
+    } catch (error) {
+      console.error('❌ Error processing unit data:', error);
+      throw error;
+    }
+  },
+
+  // Parse Excel or CSV file content
+  async parseExcelOrCSV(file: File): Promise<{ data: any[][]; headers: string[] }> {
+    const fileType = file.type;
+    
+    if (fileType === 'text/csv') {
+      return this.parseCSV(file);
+    } else if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
+      return this.parseExcel(file);
+    } else {
+      throw new Error('Unsupported file type for unit data processing');
+    }
+  },
+
+  // Parse CSV file
+  async parseCSV(file: File): Promise<{ data: any[][]; headers: string[] }> {
+    const text = await file.text();
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    if (lines.length === 0) {
+      throw new Error('Empty CSV file');
+    }
+    
+    // Simple CSV parsing (handles basic cases)
+    const data = lines.map(line => {
+      // Split by comma, but handle quoted values
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    });
+    
+    const headers = data[0] || [];
+    const rows = data.slice(1);
+    
+    return { data: rows, headers };
+  },
+
+  // Parse Excel file (simplified - in production you'd use a library like xlsx)
+  async parseExcel(file: File): Promise<{ data: any[][]; headers: string[] }> {
+    // For now, we'll use a simplified approach
+    // In production, you'd import and use a library like 'xlsx'
+    throw new Error('Excel parsing not yet implemented. Please use CSV format for now.');
   },
 
   async deleteFile(fileId: string): Promise<void> {

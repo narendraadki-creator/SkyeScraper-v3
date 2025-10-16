@@ -24,7 +24,7 @@ interface MobileSecurityPageProps {
 
 export const MobileSecurityPage: React.FC<MobileSecurityPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   console.log('=== SECURITY PAGE RENDERING ===');
     
     // ... rest of component
@@ -122,9 +122,15 @@ export const MobileSecurityPage: React.FC<MobileSecurityPageProps> = ({ classNam
     alert('Two-factor authentication toggle functionality would be implemented here');
   };
 
-  const handleLogoutAllDevices = () => {
-    // Here you would implement logout all devices functionality
-    alert('Logout all devices functionality would be implemented here');
+  const handleLogoutAllDevices = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout all devices error:', error);
+      // Navigate to login even if logout fails
+      navigate('/login');
+    }
   };
 
   return (

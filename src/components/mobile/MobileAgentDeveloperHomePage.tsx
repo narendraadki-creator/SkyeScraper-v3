@@ -48,13 +48,44 @@ export const MobileAgentDeveloperHomePage: React.FC = () => {
       // Import supabase to get projects for this developer
       const { supabase } = await import('../../lib/supabase');
       
-      // Get all projects for this developer from projects table
-      const { data: projects, error: projectsError } = await supabase
+      // First, let's see what developer names exist in the database
+      const { data: allProjects, error: allProjectsError } = await supabase
+        .from('projects')
+        .select('developer_name')
+        .eq('status', 'published')
+        .not('developer_name', 'is', null);
+      
+      if (allProjectsError) {
+        console.error('Error fetching all projects:', allProjectsError);
+      } else {
+        const uniqueDeveloperNames = [...new Set(allProjects?.map(p => p.developer_name))];
+        console.log('Available developer names in database:', uniqueDeveloperNames);
+      }
+      
+      // Try exact match first
+      let { data: projects, error: projectsError } = await supabase
         .from('projects')
         .select('*')
         .eq('developer_name', developerName)
         .eq('status', 'published')
         .order('name');
+      
+      // If no exact match, try case-insensitive match
+      if (!projects || projects.length === 0) {
+        console.log('No exact match found, trying case-insensitive search...');
+        const { data: caseInsensitiveProjects, error: caseInsensitiveError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('status', 'published')
+          .order('name');
+        
+        if (caseInsensitiveProjects) {
+          projects = caseInsensitiveProjects.filter(p => 
+            p.developer_name?.toLowerCase() === developerName?.toLowerCase()
+          );
+          projectsError = caseInsensitiveError;
+        }
+      }
 
       if (projectsError || !projects || projects.length === 0) {
         console.error('Developer projects not found:', projectsError);

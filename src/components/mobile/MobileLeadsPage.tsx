@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
@@ -10,21 +9,18 @@ import {
   Filter,
   Phone,
   Mail,
-  MapPin,
   DollarSign,
   Calendar,
   Users,
   TrendingUp,
   Target,
-  Eye,
-  ChevronDown,
   ChevronRight,
   Clock,
   CheckCircle,
   AlertCircle,
   XCircle,
+  Building,
   Home,
-  Gift,
   Settings
 } from 'lucide-react';
 
@@ -32,20 +28,22 @@ interface MobileLeadsPageProps {
   className?: string;
 }
 
-export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = '' }) => {
+export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsWithProjects, setLeadsWithProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<LeadFilters>({});
+  const [filters, setFilters] = useState<LeadFilters>({ status: 'all' as any });
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     new: 0,
     contacted: 0,
     qualified: 0,
+    negotiation: 0,
+    won: 0,
+    lost: 0,
     thisMonth: 0
   });
 
@@ -61,11 +59,41 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
       const leadsResponse = await leadService.getLeads(filters);
       console.log('Leads response:', leadsResponse);
       console.log('Leads array:', leadsResponse.leads);
-      setLeads(leadsResponse.leads || []);
+      const leadsData = leadsResponse.leads || [];
+
+      // Load project information for leads that have project_id
+      const { supabase } = await import('../../lib/supabase');
+      const leadsWithProjectData = await Promise.all(
+        leadsData.map(async (lead) => {
+          if (lead.project_id) {
+            try {
+              const { data: projectData, error: projectError } = await supabase
+                .from('projects')
+                .select('name, location, developer_name')
+                .eq('id', lead.project_id)
+                .single();
+
+              if (projectError) {
+                console.error('Error loading project for lead:', lead.id, projectError);
+                return { ...lead, project: null };
+              } else {
+                return { ...lead, project: projectData };
+              }
+            } catch (error) {
+              console.error('Failed to load project for lead:', lead.id, error);
+              return { ...lead, project: null };
+            }
+          } else {
+            return { ...lead, project: null };
+          }
+        })
+      );
+
+      setLeadsWithProjects(leadsWithProjectData);
     } catch (error) {
       console.error('Failed to load leads:', error);
       setError('Failed to load leads. Please try again.');
-      setLeads([]);
+      setLeadsWithProjects([]);
     } finally {
       setLoading(false);
     }
@@ -78,13 +106,22 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
       const thisMonth = new Date();
       thisMonth.setDate(1);
       
+      // Get all unique statuses to ensure we count all leads
+      const allStatuses = [...new Set(allLeads.map(lead => lead.status))];
+      console.log('All lead statuses found:', allStatuses);
+      
       const statsData = {
         total: allLeads.length,
         new: allLeads.filter(lead => lead.status === 'new').length,
         contacted: allLeads.filter(lead => lead.status === 'contacted').length,
         qualified: allLeads.filter(lead => lead.status === 'qualified').length,
+        negotiation: allLeads.filter(lead => lead.status === 'negotiation').length,
+        won: allLeads.filter(lead => lead.status === 'won').length,
+        lost: allLeads.filter(lead => lead.status === 'lost').length,
         thisMonth: allLeads.filter(lead => new Date(lead.created_at) >= thisMonth).length
       };
+      
+      console.log('Lead stats breakdown:', statsData);
       
       setStats(statsData);
     } catch (error) {
@@ -94,6 +131,9 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
         new: 0,
         contacted: 0,
         qualified: 0,
+        negotiation: 0,
+        won: 0,
+        lost: 0,
         thisMonth: 0
       });
     }
@@ -103,6 +143,14 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
     navigate(`/mobile/leads/${lead.id}`);
   };
 
+  const handleStatusClick = (status: LeadStatus | 'all') => {
+    // Toggle the status filter - if already selected, clear it
+    if (filters.status === status) {
+      setFilters(prev => ({ ...prev, status: undefined }));
+    } else {
+      setFilters(prev => ({ ...prev, status: status === 'all' ? undefined : status }));
+    }
+  };
 
   const getStatusIcon = (status: LeadStatus) => {
     switch (status) {
@@ -186,14 +234,15 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
     });
   };
 
-  const filteredLeads = (leads || []).filter(lead => {
+  const filteredLeads = (leadsWithProjects || []).filter(lead => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     const matches = (
       lead.first_name.toLowerCase().includes(searchLower) ||
       lead.last_name.toLowerCase().includes(searchLower) ||
       lead.email?.toLowerCase().includes(searchLower) ||
-      lead.phone.includes(searchTerm)
+      lead.phone.includes(searchTerm) ||
+      lead.project?.name?.toLowerCase().includes(searchLower)
     );
     console.log(`Searching for "${searchTerm}" in lead ${lead.first_name} ${lead.last_name}:`, matches);
     return matches;
@@ -305,27 +354,241 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
             Lead Status Breakdown
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* All Status */}
+            <div 
+              onClick={() => handleStatusClick('all')}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: !filters.status || filters.status === 'all' ? '#F0F9F8' : 'transparent',
+                border: !filters.status || filters.status === 'all' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (!filters.status || filters.status !== 'all') {
+                  e.currentTarget.style.backgroundColor = '#F8F9F9';
+                  e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!filters.status || filters.status !== 'all') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = 'transparent';
+                }
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Users size={16} color="#016A5D" />
+                <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>All</span>
+              </div>
+              <span style={{ fontSize: '16px', fontWeight: '600', color: '#016A5D' }}>{stats.total}</span>
+            </div>
+
+            {/* New Status */}
+            <div 
+              onClick={() => handleStatusClick('new')}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: filters.status === 'new' ? '#F0F9F8' : 'transparent',
+                border: filters.status === 'new' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (filters.status !== 'new') {
+                  e.currentTarget.style.backgroundColor = '#F8F9F9';
+                  e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (filters.status !== 'new') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = 'transparent';
+                }
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Clock size={16} color="#016A5D" />
                 <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>New</span>
               </div>
               <span style={{ fontSize: '16px', fontWeight: '600', color: '#016A5D' }}>{stats.new}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div 
+              onClick={() => handleStatusClick('contacted')}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: filters.status === 'contacted' ? '#F0F9F8' : 'transparent',
+                border: filters.status === 'contacted' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (filters.status !== 'contacted') {
+                  e.currentTarget.style.backgroundColor = '#F8F9F9';
+                  e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (filters.status !== 'contacted') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = 'transparent';
+                }
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <CheckCircle size={16} color="#CBA135" />
                 <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Contacted</span>
               </div>
               <span style={{ fontSize: '16px', fontWeight: '600', color: '#CBA135' }}>{stats.contacted}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Target size={16} color="#016A5D" />
-                <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Qualified</span>
+            {stats.qualified > 0 && (
+              <div 
+                onClick={() => handleStatusClick('qualified')}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: filters.status === 'qualified' ? '#F0F9F8' : 'transparent',
+                  border: filters.status === 'qualified' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (filters.status !== 'qualified') {
+                    e.currentTarget.style.backgroundColor = '#F8F9F9';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (filters.status !== 'qualified') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Target size={16} color="#016A5D" />
+                  <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Qualified</span>
+                </div>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: '#016A5D' }}>{stats.qualified}</span>
               </div>
-              <span style={{ fontSize: '16px', fontWeight: '600', color: '#016A5D' }}>{stats.qualified}</span>
-            </div>
+            )}
+            {stats.negotiation > 0 && (
+              <div 
+                onClick={() => handleStatusClick('negotiation')}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: filters.status === 'negotiation' ? '#F0F9F8' : 'transparent',
+                  border: filters.status === 'negotiation' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (filters.status !== 'negotiation') {
+                    e.currentTarget.style.backgroundColor = '#F8F9F9';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (filters.status !== 'negotiation') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <AlertCircle size={16} color="#FF6B35" />
+                  <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Negotiation</span>
+                </div>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: '#FF6B35' }}>{stats.negotiation}</span>
+              </div>
+            )}
+            {stats.won > 0 && (
+              <div 
+                onClick={() => handleStatusClick('won')}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: filters.status === 'won' ? '#F0F9F8' : 'transparent',
+                  border: filters.status === 'won' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (filters.status !== 'won') {
+                    e.currentTarget.style.backgroundColor = '#F8F9F9';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (filters.status !== 'won') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <CheckCircle size={16} color="#10B981" />
+                  <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Won</span>
+                </div>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: '#10B981' }}>{stats.won}</span>
+              </div>
+            )}
+            {stats.lost > 0 && (
+              <div 
+                onClick={() => handleStatusClick('lost')}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: filters.status === 'lost' ? '#F0F9F8' : 'transparent',
+                  border: filters.status === 'lost' ? '1px solid rgba(1, 106, 93, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (filters.status !== 'lost') {
+                    e.currentTarget.style.backgroundColor = '#F8F9F9';
+                    e.currentTarget.style.borderColor = 'rgba(1, 106, 93, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (filters.status !== 'lost') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <XCircle size={16} color="#EF4444" />
+                  <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>Lost</span>
+                </div>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: '#EF4444' }}>{stats.lost}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -612,6 +875,14 @@ export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = ''
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {lead.project && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Building size={16} color="#016A5D" />
+                        <span style={{ fontSize: '16px', color: '#333333', fontWeight: '500' }}>
+                          {lead.project.name}
+                        </span>
+                      </div>
+                    )}
                     {lead.phone && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Phone size={16} color="#016A5D" />

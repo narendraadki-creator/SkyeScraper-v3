@@ -28,13 +28,18 @@ interface MobileAgentSettingsPageProps {
 
 export const MobileAgentSettingsPage: React.FC<MobileAgentSettingsPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { user, role, logout } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    console.log('Logout clicked');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Navigate to login even if logout fails
+      navigate('/login');
+    }
   };
 
   const handleBack = () => {

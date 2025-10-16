@@ -18,6 +18,8 @@ interface AuthContextType {
   isAgent: boolean;
   canManageProjects: boolean;
   canViewAllProjects: boolean;
+  // Auth functions
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -31,6 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   isAgent: false,
   canManageProjects: false,
   canViewAllProjects: false,
+  logout: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -130,6 +133,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const logout = async () => {
+    try {
+      // Clear all auth state
+      setUser(null);
+      setEmployeeId(null);
+      setOrganizationId(null);
+      setRole(null);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error during logout:', error);
+        // Even if there's an error, we still clear the local state
+      }
+      
+      // Clear any stored tokens or session data
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Clear local state even if logout fails
+      setUser(null);
+      setEmployeeId(null);
+      setOrganizationId(null);
+      setRole(null);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -141,7 +175,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isDeveloper,
       isAgent,
       canManageProjects,
-      canViewAllProjects
+      canViewAllProjects,
+      logout
     }}>
       {children}
     </AuthContext.Provider>
