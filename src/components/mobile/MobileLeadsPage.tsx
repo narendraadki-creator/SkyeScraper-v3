@@ -19,7 +19,9 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  XCircle
+  XCircle,
+  Home,
+  Settings
 } from 'lucide-react';
 
 interface MobileLeadsPageProps {
