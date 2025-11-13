@@ -132,12 +132,15 @@ class AdminService {
 
     const performance = {
       avg_response_time: 2.5, // Mock data - would need actual calculation
-      top_performing_agents: topAgents?.slice(0, 5).map(agent => ({
-        agent_id: agent.assigned_to,
-        agent_name: `${agent.employees?.first_name} ${agent.employees?.last_name}`,
-        leads_count: 0, // Would need actual calculation
-        conversion_rate: 0, // Would need actual calculation
-      })) || [],
+      top_performing_agents: topAgents?.slice(0, 5).map(agent => {
+        const employee = Array.isArray(agent.employees) ? agent.employees[0] : agent.employees;
+        return {
+          agent_id: agent.assigned_to,
+          agent_name: employee ? `${employee.first_name} ${employee.last_name}` : 'Unknown',
+          leads_count: 0, // Would need actual calculation
+          conversion_rate: 0, // Would need actual calculation
+        };
+      }) || [],
       top_projects: topProjects?.map(project => ({
         project_id: project.id,
         project_name: project.name,
@@ -731,7 +734,7 @@ class AdminService {
       status: project.status,
       created_at: project.created_at,
       updated_at: project.updated_at,
-      unit_count: 0,
+      units_count: 0,
       lead_count: 0,
     };
   }

@@ -117,7 +117,11 @@ class AuthService {
 
       console.log('Registration completed successfully');
       return {
-        user: authData.user,
+        user: authData.user ? {
+          id: authData.user.id,
+          email: authData.user.email || '',
+          user_metadata: authData.user.user_metadata
+        } : null,
         employee,
         organization,
       };
@@ -178,7 +182,11 @@ class AuthService {
         .eq('id', employee.id);
 
       return {
-        user: authData.user,
+        user: authData.user ? {
+          id: authData.user.id,
+          email: authData.user.email || '',
+          user_metadata: authData.user.user_metadata
+        } : null,
         employee,
         organization: employee.organizations,
       };

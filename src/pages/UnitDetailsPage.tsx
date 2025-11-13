@@ -187,7 +187,7 @@ export const UnitDetailsPage: React.FC = () => {
                     <Users className="w-5 h-5 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Parking</p>
-                      <p className="font-semibold">{unit.parking_spaces || 'N/A'}</p>
+                      <p className="font-semibold">{unit.custom_fields?.parking_spaces || 'N/A'}</p>
                     </div>
                   </div>
                 </div>

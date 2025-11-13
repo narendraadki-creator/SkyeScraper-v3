@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Upload, Download, ArrowLeft } from 'lucide-react';
+import { Plus, Upload, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { UnitsTable } from '../components/units/UnitsTable';
@@ -90,9 +90,12 @@ export const UnitsPage: React.FC<UnitsPageProps> = ({ variant = 'desktop', initi
       if (history.length > 0) {
         const latestImport = history[0];
         console.log('Latest import:', latestImport);
-        if (latestImport.column_mapping && latestImport.column_mapping.display_config) {
-          console.log('Setting display config:', latestImport.column_mapping.display_config);
-          setDisplayConfig(latestImport.column_mapping.display_config);
+        if (latestImport.column_mapping && (latestImport.column_mapping as any).display_config) {
+          console.log('Setting display config:', (latestImport.column_mapping as any).display_config);
+          const config = (latestImport.column_mapping as any).display_config;
+          if (Array.isArray(config)) {
+            setDisplayConfig(config);
+          }
         }
       }
     } catch (err) {
@@ -289,7 +292,7 @@ export const UnitsPage: React.FC<UnitsPageProps> = ({ variant = 'desktop', initi
         onView={handleViewUnit}
         onImport={() => setShowImport(true)}
         onExport={handleExport}
-        role={role}
+        role={role || undefined}
       />
 
 
