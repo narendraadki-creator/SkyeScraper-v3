@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import { canEditProject, canDeleteProject, canManageUnits, getRoleBasedBackPath } from '../../utils/rolePermissions';
+import { canEditProject, canManageUnits, getRoleBasedBackPath } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -13,30 +13,13 @@ import {
   DollarSign,
   Calendar,
   Building,
-  Bed,
-  Bath,
   Download,
-  Star,
-  Home,
-  Users,
-  TrendingUp,
-  Settings,
-  ChevronRight,
-  Play,
-  FileText,
   CheckCircle,
-  Clock,
   CreditCard,
   Eye,
   Share2,
   Image as ImageIcon,
-  File,
-  FileImage,
-  Edit,
-  Trash2,
-  Archive,
-  Upload,
-  Plus
+  File
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
 
@@ -46,11 +29,11 @@ interface MobileDeveloperProjectDetailsProps {
 
 type TabType = 'overview' | 'floor-plans' | 'brochures' | 'availability' | 'payment-plans';
 
-export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetailsProps> = ({ className = '' }) => {
+export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetailsProps> = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [projectFiles, setProjectFiles] = useState<any[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -206,20 +189,6 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
     return 'Available';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'published': return '#10B981';
-      case 'draft': return '#F59E0B';
-      case 'archived': return '#6B7280';
-      default: return '#6B7280';
-    }
-  };
-
-  const getFileIcon = (fileType: string) => {
-    if (fileType.includes('image')) return <ImageIcon size={20} />;
-    if (fileType.includes('pdf')) return <FileText size={20} />;
-    return <File size={20} />;
-  };
 
   const getFileType = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toUpperCase();

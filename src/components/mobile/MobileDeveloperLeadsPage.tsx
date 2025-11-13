@@ -3,38 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import type { Lead, LeadFilters, LeadStatus, LeadStage } from '../../types/lead';
+import type { Lead, LeadFilters, LeadStatus } from '../../types/lead';
 import {
   Search,
   Filter,
   Plus,
-  User,
-  Phone,
-  Mail,
   MapPin,
   DollarSign,
-  Calendar,
-  Eye,
-  Edit,
-  Trash2,
-  ArrowLeft,
-  Home,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileDeveloperLeadsPageProps {
   className?: string;
 }
 
-export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> = ({ className = '' }) => {
+export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<LeadFilters>({});
+  const [filters] = useState<LeadFilters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<{
     total: number;

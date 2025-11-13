@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { Loading } from '../ui/Loading';
 import type { FileUploadData, ImportPreview, ColumnMapping, ImportOptions } from '../../types/unit';
 import { unitService } from '../../services/unitService';

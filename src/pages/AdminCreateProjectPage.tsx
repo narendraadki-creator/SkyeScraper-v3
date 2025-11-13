@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { SimpleSelect } from '../components/ui/SimpleSelect';
-import { Textarea } from '../components/ui/Textarea';
 import { Badge } from '../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
@@ -17,8 +15,6 @@ import {
   Building,
   Save,
   AlertTriangle,
-  Plus,
-  X,
   Zap,
   Upload,
   CheckCircle,

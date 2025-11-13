@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Trash2, Eye, Filter, Download, Upload } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -29,9 +29,6 @@ interface UnitsTableProps {
 export const UnitsTable: React.FC<UnitsTableProps> = ({
   units,
   loading = false,
-  onEdit,
-  onDelete,
-  onView,
   onImport,
   onExport,
   customColumns = [],
@@ -48,7 +45,6 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({
   const [filters, setFilters] = useState<UnitFilters>({});
   const [sortField, setSortField] = useState<string>('unit_number');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
 
   // Helper functions for dynamic table
   const formatValue = (value: any, type: string) => {
@@ -119,57 +115,6 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({
     console.log('DisplayConfig items with source:', config.filter(col => col.source));
   }
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (field: string) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '↑' : '↓';
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      available: { color: 'green', label: 'Available' },
-      held: { color: 'yellow', label: 'Held' },
-      sold: { color: 'red', label: 'Sold' },
-      reserved: { color: 'blue', label: 'Reserved' }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || { color: 'gray', label: status };
-    
-    return (
-      <Badge variant={config.color as any}>
-        {config.label}
-      </Badge>
-    );
-  };
-
-
-  const getCustomFieldValue = (unit: Unit, customField: string) => {
-    return unit.custom_fields?.[customField] || '-';
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUnits(units.map(unit => unit.id));
-    } else {
-      setSelectedUnits([]);
-    }
-  };
-
-  const handleSelectUnit = (unitId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedUnits(prev => [...prev, unitId]);
-    } else {
-      setSelectedUnits(prev => prev.filter(id => id !== unitId));
-    }
-  };
 
   const filteredAndSortedUnits = React.useMemo(() => {
     let filtered = units;
