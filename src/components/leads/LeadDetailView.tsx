@@ -201,25 +201,11 @@ export const LeadDetailView: React.FC<LeadDetailViewProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                {editing ? (
-                  <Input
-                    value={updateData.first_name || lead.first_name}
-                    onChange={(e) => handleFieldChange('first_name', e.target.value)}
-                  />
-                ) : (
-                  <p className="text-gray-900">{lead.first_name}</p>
-                )}
+                <p className="text-gray-900">{lead.first_name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                {editing ? (
-                  <Input
-                    value={updateData.last_name || lead.last_name}
-                    onChange={(e) => handleFieldChange('last_name', e.target.value)}
-                  />
-                ) : (
-                  <p className="text-gray-900">{lead.last_name}</p>
-                )}
+                <p className="text-gray-900">{lead.last_name}</p>
               </div>
             </div>
 
@@ -228,14 +214,7 @@ export const LeadDetailView: React.FC<LeadDetailViewProps> = ({
                 <Phone className="w-4 h-4 inline mr-1" />
                 Phone Number
               </label>
-              {editing ? (
-                <Input
-                  value={updateData.phone || lead.phone}
-                  onChange={(e) => handleFieldChange('phone', e.target.value)}
-                />
-              ) : (
-                <p className="text-gray-900">{lead.phone}</p>
-              )}
+              <p className="text-gray-900">{lead.phone}</p>
             </div>
 
             <div>
@@ -243,15 +222,7 @@ export const LeadDetailView: React.FC<LeadDetailViewProps> = ({
                 <Mail className="w-4 h-4 inline mr-1" />
                 Email Address
               </label>
-              {editing ? (
-                <Input
-                  type="email"
-                  value={updateData.email || lead.email || ''}
-                  onChange={(e) => handleFieldChange('email', e.target.value)}
-                />
-              ) : (
-                <p className="text-gray-900">{lead.email || 'Not provided'}</p>
-              )}
+              <p className="text-gray-900">{lead.email || 'Not provided'}</p>
             </div>
 
             <div>

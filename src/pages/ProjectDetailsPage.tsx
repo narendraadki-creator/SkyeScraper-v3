@@ -99,8 +99,9 @@ export const ProjectDetailsPage: React.FC = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx,.xls,.csv';
-    input.onchange = async () => {
-      const file = input.files && input.files[0];
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files && target.files[0];
       if (!file) return;
       try {
         setUnitsLoading(true);

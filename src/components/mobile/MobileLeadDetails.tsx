@@ -58,10 +58,6 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
       const leadData = await leadService.getLead(leadId!);
       setLead(leadData);
       setUpdateData({
-        first_name: leadData.first_name,
-        last_name: leadData.last_name,
-        email: leadData.email,
-        phone: leadData.phone,
         status: leadData.status,
         stage: leadData.stage,
         budget_min: leadData.budget_min,
@@ -612,31 +608,13 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
                 }}>
                   First Name
                 </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={updateData.first_name || ''}
-                    onChange={(e) => setUpdateData({ ...updateData, first_name: e.target.value })}
-                    style={{
-                      padding: '16px',
-                      border: '1px solid rgba(1, 106, 93, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontWeight: '400',
-                      color: '#333333',
-                      boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-                    }}
-                  />
-                ) : (
-                  <span style={{ 
-                    fontSize: '18px', 
-                    color: '#333333',
-                    fontWeight: '500',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}>
-                    {lead.first_name}
+                <span style={{ 
+                  fontSize: '18px', 
+                  color: '#333333',
+                  fontWeight: '500',
+                  fontFamily: 'Montserrat, sans-serif'
+                }}>
+                  {lead.first_name}
                   </span>
                 )}
               </div>
@@ -650,33 +628,14 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
                 }}>
                   Last Name
                 </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={updateData.last_name || ''}
-                    onChange={(e) => setUpdateData({ ...updateData, last_name: e.target.value })}
-                    style={{
-                      padding: '16px',
-                      border: '1px solid rgba(1, 106, 93, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontWeight: '400',
-                      color: '#333333',
-                      boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-                    }}
-                  />
-                ) : (
-                  <span style={{ 
-                    fontSize: '18px', 
-                    color: '#333333',
-                    fontWeight: '500',
-                    fontFamily: 'Montserrat, sans-serif'
-                  }}>
-                    {lead.last_name}
-                  </span>
-                )}
+                <span style={{ 
+                  fontSize: '18px', 
+                  color: '#333333',
+                  fontWeight: '500',
+                  fontFamily: 'Montserrat, sans-serif'
+                }}>
+                  {lead.last_name}
+                </span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -688,36 +647,17 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
                 }}>
                   Phone
                 </label>
-                {editing ? (
-                  <input
-                    type="tel"
-                    value={updateData.phone || ''}
-                    onChange={(e) => setUpdateData({ ...updateData, phone: e.target.value })}
-                    style={{
-                      padding: '16px',
-                      border: '1px solid rgba(1, 106, 93, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontWeight: '400',
-                      color: '#333333',
-                      boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-                    }}
-                  />
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Phone size={20} color="#016A5D" />
-                    <span style={{ 
-                      fontSize: '18px', 
-                      color: '#333333',
-                      fontWeight: '500',
-                      fontFamily: 'Montserrat, sans-serif'
-                    }}>
-                      {lead.phone}
-                    </span>
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Phone size={20} color="#016A5D" />
+                  <span style={{ 
+                    fontSize: '18px', 
+                    color: '#333333',
+                    fontWeight: '500',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {lead.phone}
+                  </span>
+                </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -729,36 +669,17 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
                 }}>
                   Email
                 </label>
-                {editing ? (
-                  <input
-                    type="email"
-                    value={updateData.email || ''}
-                    onChange={(e) => setUpdateData({ ...updateData, email: e.target.value })}
-                    style={{
-                      padding: '16px',
-                      border: '1px solid rgba(1, 106, 93, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      backgroundColor: 'white',
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontWeight: '400',
-                      color: '#333333',
-                      boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-                    }}
-                  />
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Mail size={20} color="#016A5D" />
-                    <span style={{ 
-                      fontSize: '18px', 
-                      color: '#333333',
-                      fontWeight: '500',
-                      fontFamily: 'Montserrat, sans-serif'
-                    }}>
-                      {lead.email || 'Not provided'}
-                    </span>
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Mail size={20} color="#016A5D" />
+                  <span style={{ 
+                    fontSize: '18px', 
+                    color: '#333333',
+                    fontWeight: '500',
+                    fontFamily: 'Montserrat, sans-serif'
+                  }}>
+                    {lead.email || 'Not provided'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

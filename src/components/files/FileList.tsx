@@ -118,14 +118,14 @@ export const FileList: React.FC<FileListProps> = ({
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="text-2xl flex-shrink-0">
-                    {getFileIcon(file.mime_type || '')}
+                    {getFileIcon(file.file_name || '')}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {file.file_name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {(file.file_size / 1024 / 1024).toFixed(2)} MB • {file.mime_type || 'Unknown type'}
+                      {(file.file_size / 1024 / 1024).toFixed(2)} MB • {file.file_purpose || 'Unknown type'}
                     </p>
                   </div>
                 </div>
