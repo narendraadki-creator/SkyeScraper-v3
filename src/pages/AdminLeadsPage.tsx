@@ -153,13 +153,6 @@ export const AdminLeadsPage: React.FC = () => {
     }).format(amount);
   };
 
-    return new Date(dateString).toLocaleDateString('en-AE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-AE', {
       year: 'numeric',
