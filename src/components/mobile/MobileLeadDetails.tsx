@@ -97,10 +97,6 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
   const handleCancel = () => {
     if (lead) {
       setUpdateData({
-        first_name: lead.first_name,
-        last_name: lead.last_name,
-        email: lead.email,
-        phone: lead.phone,
         status: lead.status,
         stage: lead.stage,
         budget_min: lead.budget_min,

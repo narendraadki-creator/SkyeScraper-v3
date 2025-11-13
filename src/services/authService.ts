@@ -121,7 +121,7 @@ class AuthService {
           id: authData.user.id,
           email: authData.user.email || '',
           user_metadata: authData.user.user_metadata
-        } : null,
+        } : undefined,
         employee,
         organization,
       };
@@ -186,7 +186,7 @@ class AuthService {
           id: authData.user.id,
           email: authData.user.email || '',
           user_metadata: authData.user.user_metadata
-        } : null,
+        } : undefined,
         employee,
         organization: employee.organizations,
       };
@@ -243,7 +243,11 @@ class AuthService {
 
       console.log('getCurrentUser: Employee data found successfully');
       return {
-        user,
+        user: user ? {
+          id: user.id,
+          email: user.email || '',
+          user_metadata: user.user_metadata
+        } : undefined,
         employee,
         organization: employee.organizations,
       };

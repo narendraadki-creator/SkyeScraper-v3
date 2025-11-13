@@ -735,7 +735,7 @@ class AdminService {
       created_at: project.created_at,
       updated_at: project.updated_at,
       units_count: 0,
-      lead_count: 0,
+      leads_count: 0,
     };
   }
 
