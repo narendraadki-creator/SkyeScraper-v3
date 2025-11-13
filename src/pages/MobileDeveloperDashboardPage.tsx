@@ -84,39 +84,6 @@ const MobileDeveloperDashboardContent: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'published':
-        return '#10B981';
-      case 'draft':
-        return '#F59E0B';
-      case 'archived':
-        return '#6B7280';
-      default:
-        return '#6B7280';
-    }
-  };
-
-  const _getStatusTextColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'published':
-        return '#065F46';
-      case 'draft':
-        return '#92400E';
-      case 'archived':
-        return '#374151';
-      default:
-        return '#374151';
-    }
-  };
 
   if (loading) {
     return (
