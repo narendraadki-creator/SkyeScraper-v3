@@ -13,7 +13,7 @@ import type {
 import { STANDARD_COLUMN_MAPPINGS } from '../types/unit';
 
 // Helper function to get user role with three-role system
-const getUserRole = (employee: { role: string }): UserRole => {
+const getUserRole = (employee: { role: string }): string => {
   // Use the role from the database
   const role = employee.role;
   
