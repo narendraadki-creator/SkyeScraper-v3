@@ -662,7 +662,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                         flexShrink: 0
                       }}>
                         <button
-                          onClick={() => handleViewFile(file.url, file.name)}
+                          onClick={() => handleViewFile(file.url)}
                           style={{
                             padding: '10px',
                             backgroundColor: 'var(--primary-50)',
