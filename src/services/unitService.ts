@@ -19,7 +19,7 @@ const getUserRole = (employee: { role: string }): string => {
   
   // Validate and return typed role
   if (role === 'admin' || role === 'developer' || role === 'agent') {
-    return role as UserRole;
+    return role;
   }
   
   // Legacy role mapping for backward compatibility
