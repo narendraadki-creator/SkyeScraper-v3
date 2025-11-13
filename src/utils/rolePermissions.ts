@@ -111,7 +111,7 @@ export const hasFeatureAccess = (role: string, feature: string): boolean => {
     'settings': ['agent', 'developer', 'admin']
   };
 
-  return featurePermissions[feature]?.includes(role) || false;
+  return (featurePermissions[feature as keyof typeof featurePermissions]?.includes(role) || false);
 };
 
 /**

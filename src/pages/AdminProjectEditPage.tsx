@@ -27,8 +27,8 @@ interface ProjectFormData {
   completion_date: string;
   amenities: string[];
   connectivity: string[];
-  landmarks: string[];
-  payment_plans: string[];
+  landmarks: Array<string | { name: string; distance: string }>;
+  payment_plans: Array<string | { name: string; description: string; terms: string }>;
 }
 
 export const AdminProjectEditPage: React.FC = () => {
@@ -468,7 +468,7 @@ export const AdminProjectEditPage: React.FC = () => {
                         {formData.landmarks?.map((landmark, index) => (
                           <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                             <span className="text-sm">
-                              <strong>{landmark.name}</strong> - {landmark.distance}
+                              {typeof landmark === 'string' ? landmark : <><strong>{landmark.name}</strong> - {landmark.distance}</>}
                             </span>
                             <button
                               type="button"
@@ -516,11 +516,17 @@ export const AdminProjectEditPage: React.FC = () => {
                           <div key={index} className="p-3 bg-gray-50 rounded">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{plan.name}</h4>
-                                {plan.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{plan.description}</p>
+                                {typeof plan === 'string' ? (
+                                  <p className="text-sm text-gray-900">{plan}</p>
+                                ) : (
+                                  <>
+                                    <h4 className="font-medium text-gray-900">{plan.name}</h4>
+                                    {plan.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{plan.description}</p>
+                                    )}
+                                    <p className="text-sm text-gray-500 mt-1">{plan.terms}</p>
+                                  </>
                                 )}
-                                <p className="text-sm text-gray-500 mt-1">{plan.terms}</p>
                               </div>
                               <button
                                 type="button"

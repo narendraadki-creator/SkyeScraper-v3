@@ -431,7 +431,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
                     }}>
                       <MapPin size={16} color="var(--gray-500)" />
                       <span style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
-                        {typeof conn === 'string' ? conn : `${conn.name} - ${conn.distance}`}
+                        {String(conn)}
                       </span>
                     </div>
                   ))}

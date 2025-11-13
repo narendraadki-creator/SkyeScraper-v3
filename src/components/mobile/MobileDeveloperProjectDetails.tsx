@@ -371,7 +371,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
                       fontSize: '12px',
                       fontWeight: '500'
                     }}>
-                      {typeof amenity === 'string' ? amenity : amenity.name || JSON.stringify(amenity)}
+                      {String(amenity)}
                     </span>
                   ))}
                 </div>
@@ -402,7 +402,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
                       fontSize: '12px',
                       fontWeight: '500'
                     }}>
-                      {typeof item === 'string' ? item : item.name || JSON.stringify(item)}
+                      {String(item)}
                     </span>
                   ))}
                 </div>
@@ -678,7 +678,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
         return (
           <div style={{ padding: '16px' }}>
             {/* Unit Data Upload (uses existing Units import logic) */}
-            {canManageUnits(role) && (
+            {role && canManageUnits(role) && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
                 <button
                   onClick={() => navigate(`/mobile/dev/project/${project?.id}/units`)}
@@ -1069,7 +1069,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
           display: 'flex',
           gap: '8px'
         }}>
-          {canEditProject(role) && (
+          {role && canEditProject(role) && project?.id && (
             <button
               onClick={() => navigate(`/mobile/dev/project/${project.id}/edit`)}
               style={{
@@ -1087,7 +1087,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
               <Edit size={16} color="#016A5D" />
             </button>
           )}
-          {canManageUnits(role) && (
+          {role && canManageUnits(role) && project?.id && (
             <button
                 onClick={() => navigate(`/mobile/dev/project/${project.id}/units`)}
               style={{

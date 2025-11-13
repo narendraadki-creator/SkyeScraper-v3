@@ -36,12 +36,18 @@ export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> =
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<LeadFilters>({});
   const [showFilters, setShowFilters] = useState(false);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    total: number;
+    byStatus: Record<string, number>;
+    byStage: Record<string, number>;
+    thisMonth: number;
+    conversionRate: number;
+  }>({
     total: 0,
-    new: 0,
-    contacted: 0,
-    qualified: 0,
-    thisMonth: 0
+    byStatus: {},
+    byStage: {},
+    thisMonth: 0,
+    conversionRate: 0
   });
 
   useEffect(() => {
@@ -126,8 +132,9 @@ export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> =
       case 'new': return '#3B82F6';
       case 'contacted': return '#F59E0B';
       case 'qualified': return '#10B981';
-      case 'unqualified': return '#EF4444';
-      case 'converted': return '#8B5CF6';
+      case 'negotiation': return '#8B5CF6';
+      case 'won': return '#10B981';
+      case 'lost': return '#EF4444';
       default: return '#6B7280';
     }
   };

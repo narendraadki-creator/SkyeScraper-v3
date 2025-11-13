@@ -152,7 +152,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
     }
   };
 
-  const addAmenity = (e?: React.MouseEvent) => {
+  const addAmenity = (e?: React.MouseEvent | React.KeyboardEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
     
@@ -175,7 +175,7 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
     }));
   };
 
-  const addConnectivity = (e?: React.MouseEvent) => {
+  const addConnectivity = (e?: React.MouseEvent | React.KeyboardEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
     

@@ -151,7 +151,7 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       onSuccess(lead);
     } catch (error) {
       console.error('Failed to create lead:', error);
-      setErrors({ submit: `Failed to create lead: ${error.message || 'Please try again.'}` });
+      setErrors({ submit: `Failed to create lead: ${error instanceof Error ? error.message : 'Please try again.'}` });
     } finally {
       setLoading(false);
     }

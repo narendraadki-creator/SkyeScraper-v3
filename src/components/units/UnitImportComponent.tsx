@@ -84,7 +84,7 @@ export const UnitImportComponent: React.FC<UnitImportComponentProps> = ({
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
-          fileUrl: null
+          fileUrl: undefined
         });
       }
 
@@ -168,7 +168,7 @@ export const UnitImportComponent: React.FC<UnitImportComponentProps> = ({
         importPreview,
         columnMapping,
         importOptions,
-        uploadedFile.fileUrl
+        uploadedFile.fileUrl || null
       );
 
       console.log('Import result:', result);

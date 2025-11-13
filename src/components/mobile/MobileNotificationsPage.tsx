@@ -43,7 +43,7 @@ export const MobileNotificationsPage: React.FC<MobileNotificationsPageProps> = (
   const handleToggle = (key: string) => {
     setNotifications(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !(prev[key as keyof typeof prev] ?? false)
     }));
   };
 

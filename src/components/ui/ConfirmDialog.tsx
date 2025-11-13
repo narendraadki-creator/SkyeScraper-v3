@@ -49,7 +49,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       case 'warning':
         return 'warning';
       case 'info':
-        return 'default';
+        return 'primary';
       case 'success':
         return 'success';
       default:

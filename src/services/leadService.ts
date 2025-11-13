@@ -118,7 +118,7 @@ export const leadService = {
     }
 
     // Get total count
-    const { count } = await query.select('*', { count: 'exact', head: true });
+    const { count } = await query.select('*', { count: 'exact', head: true }) as { count: number | null };
 
     // Apply pagination
     const from = (page - 1) * limit;
