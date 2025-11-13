@@ -9,7 +9,8 @@ import {
   ArrowLeft,
   MapPin,
   Building,
-  Calendar
+  Calendar,
+  Bed
 } from 'lucide-react';
 
 interface DeveloperInfo {
@@ -25,7 +26,6 @@ interface DeveloperInfo {
 export const MobileAgentDeveloperHomePage: React.FC = () => {
   const { developerId } = useParams<{ developerId: string }>();
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [developer, setDeveloper] = useState<DeveloperInfo | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);

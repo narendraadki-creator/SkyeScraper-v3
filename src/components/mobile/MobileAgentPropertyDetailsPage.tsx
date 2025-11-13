@@ -5,7 +5,6 @@ import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import { canEditProject } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -20,7 +19,11 @@ import {
   Eye,
   Share2,
   Image as ImageIcon,
-  File
+  File,
+  FileText,
+  Home,
+  Star,
+  Clock
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
 
@@ -33,7 +36,6 @@ type TabType = 'overview' | 'floor-plans' | 'brochures' | 'availability' | 'paym
 export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [projectFiles, setProjectFiles] = useState<any[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);

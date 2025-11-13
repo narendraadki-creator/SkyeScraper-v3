@@ -14,7 +14,11 @@ import {
   FileText,
   Check,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Home,
+  Users,
+  Gift,
+  Settings
 } from 'lucide-react';
 
 interface MobileCreateLeadPageProps {
@@ -24,7 +28,6 @@ interface MobileCreateLeadPageProps {
 export const MobileCreateLeadPage: React.FC<MobileCreateLeadPageProps> = () => {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
-  const { role } = useAuth();
   
   const [formData, setFormData] = useState<CreateLeadData>(() => {
     const initialFormData = {

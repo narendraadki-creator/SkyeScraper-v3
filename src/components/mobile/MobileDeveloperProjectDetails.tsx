@@ -19,7 +19,12 @@ import {
   Eye,
   Share2,
   Image as ImageIcon,
-  File
+  File,
+  FileText,
+  Home,
+  Edit,
+  Archive,
+  Trash2
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
 

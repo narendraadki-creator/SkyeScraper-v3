@@ -6,7 +6,11 @@ import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { 
   MapPin, 
   Building, 
-  Calendar
+  Calendar,
+  Search,
+  DollarSign,
+  Home,
+  ChevronDown
 } from 'lucide-react';
 
 interface DeveloperWithStats {
@@ -27,7 +31,6 @@ interface MobileAgentLandingProps {
 
 export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [developers, setDevelopers] = useState<DeveloperWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -10,7 +10,6 @@ import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { projectService } from '../services/projectService';
-import { useAuth } from '../contexts/AuthContext';
 import { unitService } from '../services/unitService';
 import { FileList } from '../components/files/FileList';
 import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Building, Share2, Upload } from 'lucide-react';

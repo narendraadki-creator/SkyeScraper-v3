@@ -8,9 +8,12 @@ import {
   Search,
   Filter,
   Plus,
-  MapPin,
   DollarSign,
-  ArrowLeft
+  ArrowLeft,
+  User,
+  Phone,
+  Mail,
+  Eye
 } from 'lucide-react';
 
 interface MobileDeveloperLeadsPageProps {
@@ -19,7 +22,6 @@ interface MobileDeveloperLeadsPageProps {
 
 export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
