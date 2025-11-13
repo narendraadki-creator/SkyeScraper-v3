@@ -7,17 +7,9 @@ import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   ArrowLeft,
-  Search,
   MapPin,
   Building,
-  DollarSign,
-  Calendar,
-  Bed,
-  Bath,
-  Star,
-  Download,
-  Filter,
-  SortAsc
+  Calendar
 } from 'lucide-react';
 
 interface DeveloperInfo {
@@ -33,7 +25,7 @@ interface DeveloperInfo {
 export const MobileAgentDeveloperHomePage: React.FC = () => {
   const { developerId } = useParams<{ developerId: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [developer, setDeveloper] = useState<DeveloperInfo | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);

@@ -23,11 +23,9 @@ import { AdminOrganizationDetailsPage } from './pages/AdminOrganizationDetailsPa
 import { AdminOrganizationEditPage } from './pages/AdminOrganizationEditPage';
 import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
 import { 
-  RoleBasedRoute, 
   AgentRoute, 
   DeveloperRoute, 
   AdminRoute, 
-  DeveloperOrAdminRoute, 
   AgentOrDeveloperRoute 
 } from './components/auth/RoleBasedRoute';
 import { AdminProjectsPage } from './pages/AdminProjectsPage';

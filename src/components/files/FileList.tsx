@@ -7,7 +7,6 @@ import {
   Download, 
   Trash2, 
   Share2, 
-  FileText,
   MessageCircle,
   Mail,
   Copy

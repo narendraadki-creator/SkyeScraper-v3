@@ -21,7 +21,6 @@ import {
   Save,
   X,
   Building,
-  Home,
   Target,
   TrendingUp
 } from 'lucide-react';

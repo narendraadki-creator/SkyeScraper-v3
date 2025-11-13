@@ -5,7 +5,7 @@ import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import { canEditProject, canDeleteProject } from '../../utils/rolePermissions';
+import { canEditProject } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -14,26 +14,13 @@ import {
   DollarSign,
   Calendar,
   Building,
-  Bed,
-  Bath,
   Download,
-  Calendar as CalendarIcon,
-  Star,
-  Home,
-  Users,
-  TrendingUp,
-  Settings,
-  ChevronRight,
-  Play,
-  FileText,
   CheckCircle,
-  Clock,
   CreditCard,
   Eye,
   Share2,
   Image as ImageIcon,
-  File,
-  FileImage
+  File
 } from 'lucide-react';
 import { fileService } from '../../services/fileService';
 
@@ -43,10 +30,10 @@ interface PropertyDetailsPageProps {
 
 type TabType = 'overview' | 'floor-plans' | 'brochures' | 'availability' | 'payment-plans';
 
-export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> = ({ className = '' }) => {
+export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [projectFiles, setProjectFiles] = useState<any[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);

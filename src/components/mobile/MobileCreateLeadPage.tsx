@@ -4,9 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { LEAD_SOURCES, UNIT_TYPES } from '../../types/lead';
-import type { CreateLeadData, Lead } from '../../types/lead';
+import type { CreateLeadData } from '../../types/lead';
 import { 
-  User, 
   Phone, 
   Mail, 
   MapPin, 
@@ -15,21 +14,17 @@ import {
   FileText,
   Check,
   X,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileCreateLeadPageProps {
   className?: string;
 }
 
-export const MobileCreateLeadPage: React.FC<MobileCreateLeadPageProps> = ({ className = '' }) => {
+export const MobileCreateLeadPage: React.FC<MobileCreateLeadPageProps> = () => {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   
   const [formData, setFormData] = useState<CreateLeadData>(() => {
     const initialFormData = {

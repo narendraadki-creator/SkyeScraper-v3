@@ -12,8 +12,6 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
-  requiredPermission,
-  fallback,
 }) => {
   const { user, employeeId, organizationId, role, loading } = useAuth();
 

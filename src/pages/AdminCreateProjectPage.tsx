@@ -113,22 +113,17 @@ export const AdminCreateProjectPage: React.FC = () => {
         location: data.location,
         project_type: data.project_type || 'Residential',
         description: data.description || '',
-        developer_name: data.developer_name || '',
-        address: data.address || '',
         starting_price: data.starting_price,
-        total_units: data.total_units,
         completion_date: data.completion_date || '',
-        handover_date: data.handover_date || '',
         amenities: data.amenities || [],
         connectivity: data.connectivity || [],
         landmarks: Array.isArray(data.landmarks) ? data.landmarks.map(l => typeof l === 'string' ? l : `${l.name} - ${l.distance}`) : [],
         payment_plans: Array.isArray(data.payment_plans) ? data.payment_plans.map(p => typeof p === 'string' ? p : `${p.name}: ${p.description || ''} - ${p.terms || ''}`) : [],
         custom_attributes: data.custom_attributes || {},
-        is_featured: data.is_featured || false,
       };
 
       // Create project on behalf of developer
-      const project = await adminService.createProjectOnBehalf(adminProjectData);
+      await adminService.createProjectOnBehalf(adminProjectData);
 
       // Navigate to the admin projects page
       navigate('/admin/projects');

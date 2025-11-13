@@ -3,24 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import type { Project } from '../../types/project';
 import { 
-  Search, 
   MapPin, 
   Building, 
-  DollarSign, 
-  Calendar,
-  Users,
-  Eye,
-  Star,
-  Filter,
-  Menu,
-  Bell,
-  Share2,
-  Heart,
-  ChevronDown,
-  ChevronRight,
-  Home
+  Calendar
 } from 'lucide-react';
 
 interface DeveloperWithStats {
@@ -39,21 +25,12 @@ interface MobileAgentLandingProps {
   className?: string;
 }
 
-export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ className = '' }) => {
+export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [developers, setDevelopers] = useState<DeveloperWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    location: '',
-    property_type: '',
-    price_range: '',
-    bedrooms: '',
-    bathrooms: '',
-    project_status: ''
-  });
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     loadDevelopers();
@@ -184,12 +161,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     loadDevelopers();
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
 
   const handleViewDeveloper = (developer: DeveloperWithStats) => {
     // Navigate to developer details or projects
@@ -212,14 +183,6 @@ export const MobileAgentLanding: React.FC<MobileAgentLandingProps> = ({ classNam
     });
   };
 
-  const getAvailabilityBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Available': return 'success';
-      case 'Few Units Left': return 'warning';
-      case 'Sold Out': return 'danger';
-      default: return 'success';
-    }
-  };
 
   return (
     <div style={{ 
