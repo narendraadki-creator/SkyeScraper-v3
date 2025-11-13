@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import type { UserRole } from '../contexts/AuthContext';
 import type { 
   Unit, 
   UnitImport, 
@@ -8,7 +7,8 @@ import type {
   UnitFilters, 
   FileUploadData,
   ImportPreview,
-  ImportOptions
+  ImportOptions,
+  ImportError
 } from '../types/unit';
 import { STANDARD_COLUMN_MAPPINGS } from '../types/unit';
 
