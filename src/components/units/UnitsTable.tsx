@@ -102,9 +102,9 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({
   // Dynamic columns based on displayConfig - no rigid structure
   const dynamicColumns = displayConfig && displayConfig.length > 0 
     ? displayConfig
-        .filter(col => col.source || col.key) // Filter out columns with undefined source/key
+        .filter(col => col.source) // Filter out columns with undefined source
         .map(col => ({ 
-          key: col.source || col.key, 
+          key: col.source, 
           label: col.label, 
           sortable: true,
           type: col.type 
@@ -113,8 +113,11 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({
 
   console.log('Dynamic columns:', dynamicColumns);
   console.log('Display config:', displayConfig);
-  console.log('First displayConfig item:', displayConfig[0]);
-  console.log('DisplayConfig items with source:', displayConfig.filter(col => col.source));
+  if (displayConfig && displayConfig.length > 0) {
+    const config = displayConfig; // Type narrowing
+    console.log('First displayConfig item:', config[0]);
+    console.log('DisplayConfig items with source:', config.filter(col => col.source));
+  }
 
   const handleSort = (field: string) => {
     if (sortField === field) {

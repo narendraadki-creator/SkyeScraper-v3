@@ -732,10 +732,13 @@ class AdminService {
       organization_type: project.organizations?.type || 'developer',
       creation_method: project.creation_method,
       status: project.status,
+      location: project.location || '',
+      project_type: project.project_type || '',
       created_at: project.created_at,
       updated_at: project.updated_at,
-      units_count: 0,
+      views_count: project.views_count || 0,
       leads_count: 0,
+      units_count: 0,
     };
   }
 

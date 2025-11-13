@@ -10,7 +10,7 @@ import { LeadDetailView } from '../components/leads/LeadDetailView';
 import { adminService } from '../services/adminService';
 import { useAuth } from '../contexts/AuthContext';
 import type { AdminLead, AdminLeadFilters } from '../types/admin';
-import type { Lead } from '../types/lead';
+import type { Lead, LeadStatus, LeadStage } from '../types/lead';
 import {
   Target,
   Search,

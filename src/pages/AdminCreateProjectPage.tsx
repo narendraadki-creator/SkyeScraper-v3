@@ -121,8 +121,8 @@ export const AdminCreateProjectPage: React.FC = () => {
         handover_date: data.handover_date || '',
         amenities: data.amenities || [],
         connectivity: data.connectivity || [],
-        landmarks: data.landmarks || [],
-        payment_plans: data.payment_plans || [],
+        landmarks: Array.isArray(data.landmarks) ? data.landmarks.map(l => typeof l === 'string' ? l : `${l.name} - ${l.distance}`) : [],
+        payment_plans: Array.isArray(data.payment_plans) ? data.payment_plans.map(p => typeof p === 'string' ? p : `${p.name}: ${p.description || ''} - ${p.terms || ''}`) : [],
         custom_attributes: data.custom_attributes || {},
         is_featured: data.is_featured || false,
       };

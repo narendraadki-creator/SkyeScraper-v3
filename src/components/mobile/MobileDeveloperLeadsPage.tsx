@@ -215,7 +215,7 @@ export const MobileDeveloperLeadsPage: React.FC<MobileDeveloperLeadsPageProps> =
             padding: '12px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '20px', fontWeight: '700' }}>{stats.new}</div>
+            <div style={{ fontSize: '20px', fontWeight: '700' }}>{stats.byStatus['new'] || 0}</div>
             <div style={{ fontSize: '12px', opacity: 0.9 }}>New This Month</div>
           </div>
         </div>

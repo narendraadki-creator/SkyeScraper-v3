@@ -117,8 +117,29 @@ export const leadService = {
       query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`);
     }
 
-    // Get total count
-    const { count } = await query.select('*', { count: 'exact', head: true }) as { count: number | null };
+    // Get total count - use a separate count query
+    const countQuery = supabase
+      .from('leads')
+      .select('*', { count: 'exact', head: true });
+    
+    // Apply same filters to count query
+    if (employee?.organization_id) {
+      countQuery.eq('organization_id', employee.organization_id);
+    }
+    if (filters?.status) {
+      countQuery.eq('status', filters.status);
+    }
+    if (filters?.project_id) {
+      countQuery.eq('project_id', filters.project_id);
+    }
+    if (filters?.assigned_to) {
+      countQuery.eq('assigned_to', filters.assigned_to);
+    }
+    if (filters?.search) {
+      countQuery.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`);
+    }
+    
+    const { count } = await countQuery;
 
     // Apply pagination
     const from = (page - 1) * limit;
