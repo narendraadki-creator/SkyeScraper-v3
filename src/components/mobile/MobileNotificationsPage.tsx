@@ -10,18 +10,14 @@ import {
   Calendar,
   TrendingUp,
   Shield,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileNotificationsPageProps {
   className?: string;
 }
 
-export const MobileNotificationsPage: React.FC<MobileNotificationsPageProps> = ({ className = '' }) => {
+export const MobileNotificationsPage: React.FC<MobileNotificationsPageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { role } = useAuth();

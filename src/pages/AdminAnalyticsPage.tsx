@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { Loading } from '../components/ui/Loading';
 import { adminService } from '../services/adminService';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,13 +16,8 @@ import {
   Activity,
   ArrowLeft,
   AlertTriangle,
-  Calendar,
-  DollarSign,
-  Eye,
-  UserCheck,
   Clock,
-  Award,
-  PieChart
+  Award
 } from 'lucide-react';
 
 export const AdminAnalyticsPage: React.FC = () => {

@@ -18,7 +18,7 @@ type CreationMethod = 'manual' | 'ai_assisted';
 
 export const CreateProjectPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, employeeId, organizationId, role } = useAuth();
+  const { user, organizationId, role } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState<CreationMethod | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

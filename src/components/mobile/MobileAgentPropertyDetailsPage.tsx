@@ -179,23 +179,6 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
     navigate(-1); // Go back to previous page
   };
 
-  const handleDownloadBrochure = () => {
-    if (project?.brochure_url) {
-      window.open(project.brochure_url, '_blank');
-    } else {
-      alert('Brochure not available for this project');
-    }
-  };
-
-  const handleBookSiteVisit = () => {
-    // Navigate to site visit booking page or show modal
-    alert('Site visit booking functionality will be implemented');
-  };
-
-  const handleReserveUnit = () => {
-    // Navigate to unit reservation page
-    alert('Unit reservation functionality will be implemented');
-  };
 
   const handleLoadMoreUnits = () => {
     setVisibleUnitsCount(prev => Math.min(prev + 10, units.filter(u => u.status === 'available').length));
@@ -244,7 +227,7 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
     return null;
   };
 
-  const handleViewFile = (fileUrl: string, fileName: string) => {
+  const handleViewFile = (fileUrl: string) => {
     // Open file in new tab for viewing
     window.open(fileUrl, '_blank');
   };
@@ -277,24 +260,6 @@ export const MobileAgentPropertyDetailsPage: React.FC<PropertyDetailsPageProps> 
     }
   };
 
-  const getFileIcon = (fileUrl: string) => {
-    const extension = fileUrl.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-      case 'webp':
-        return <ImageIcon size={20} color="var(--primary-500)" />;
-      case 'pdf':
-        return <FileText size={20} color="var(--red-500)" />;
-      case 'doc':
-      case 'docx':
-        return <File size={20} color="var(--blue-500)" />;
-      default:
-        return <File size={20} color="var(--gray-500)" />;
-    }
-  };
 
   const getFileType = (fileUrl: string) => {
     const extension = fileUrl.split('.').pop()?.toLowerCase();

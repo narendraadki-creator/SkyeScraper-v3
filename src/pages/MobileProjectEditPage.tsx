@@ -7,7 +7,6 @@ import { ArrowLeft } from 'lucide-react';
 
 export const MobileProjectEditPage: React.FC = () => {
   const navigate = useNavigate();
-  const { projectId } = useParams();
 
   return (
     <ProtectedRoute>

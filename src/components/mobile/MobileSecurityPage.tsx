@@ -8,21 +8,15 @@ import {
   Key,
   Eye,
   EyeOff,
-  Check,
-  X,
   AlertTriangle,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileSecurityPageProps {
   className?: string;
 }
 
-export const MobileSecurityPage: React.FC<MobileSecurityPageProps> = ({ className = '' }) => {
+export const MobileSecurityPage: React.FC<MobileSecurityPageProps> = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   console.log('=== SECURITY PAGE RENDERING ===');

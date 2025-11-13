@@ -17,10 +17,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Eye,
-  UserPlus,
-  FileText,
-  Settings,
   Shield
 } from 'lucide-react';
 

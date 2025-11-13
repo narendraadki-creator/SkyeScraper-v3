@@ -16,25 +16,20 @@ import {
   Users,
   TrendingUp,
   Target,
-  Eye,
-  ChevronDown,
   ChevronRight,
   Clock,
   CheckCircle,
   AlertCircle,
-  XCircle,
-  Home,
-  Gift,
-  Settings
+  XCircle
 } from 'lucide-react';
 
 interface MobileLeadsPageProps {
   className?: string;
 }
 
-export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = ({ className = '' }) => {
+export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

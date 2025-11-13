@@ -26,7 +26,6 @@ import {
   Archive,
   MoreVertical,
   AlertTriangle,
-  TrendingUp,
   FileText
 } from 'lucide-react';
 

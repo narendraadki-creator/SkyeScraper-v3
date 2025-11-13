@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import type { Unit, UnitFilters } from '../../types/unit';
@@ -43,8 +42,8 @@ export const UnitsTable: React.FC<UnitsTableProps> = ({
   });
   console.log('Units data:', units);
   const [filters, setFilters] = useState<UnitFilters>({});
-  const [sortField, setSortField] = useState<string>('unit_number');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortField] = useState<string>('unit_number');
+  const [sortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Helper functions for dynamic table
   const formatValue = (value: any, type: string) => {

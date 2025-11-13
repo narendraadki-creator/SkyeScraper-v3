@@ -8,18 +8,14 @@ import {
   MapPin,
   Clock,
   Check,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileLanguagePageProps {
   className?: string;
 }
 
-export const MobileLanguagePage: React.FC<MobileLanguagePageProps> = ({ className = '' }) => {
+export const MobileLanguagePage: React.FC<MobileLanguagePageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { role } = useAuth();

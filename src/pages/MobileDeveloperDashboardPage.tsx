@@ -6,41 +6,25 @@ import { projectService } from '../services/projectService';
 import { leadService } from '../services/leadService';
 import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
 import { 
-  FileText, 
   Plus, 
   LogOut, 
   Building, 
   Users, 
-  Settings, 
-  Target, 
-  Search, 
   Shield, 
   BarChart3,
-  TrendingUp,
   DollarSign,
   Calendar,
   MapPin,
-  Eye,
-  Edit,
-  Trash2,
-  Archive,
-  ArrowRight,
-  Activity,
-  User,
-  Mail,
-  Phone,
-  Home,
-  Gift
+  ArrowRight
 } from 'lucide-react';
 import type { Project } from '../types/project';
 import type { Lead } from '../types/lead';
 
 const MobileDeveloperDashboardContent: React.FC = () => {
   const navigate = useNavigate();
-  const { user, employeeId, organizationId, role } = useAuth();
+  const { user, organizationId, role } = useAuth();
   
   const [projects, setProjects] = useState<Project[]>([]);
-  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalProjects: 0,
@@ -122,7 +106,7 @@ const MobileDeveloperDashboardContent: React.FC = () => {
     }
   };
 
-  const getStatusTextColor = (status: string) => {
+  const _getStatusTextColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'published':
         return '#065F46';

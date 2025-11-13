@@ -218,20 +218,6 @@ export const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const handleDeleteProject = () => {
-    setConfirmDialog({
-      isOpen: true,
-      type: 'delete',
-    });
-  };
-
-
-  const handleArchiveProject = () => {
-    setConfirmDialog({
-      isOpen: true,
-      type: 'archive',
-    });
-  };
 
   const handleConfirmAction = async () => {
     if (!project) return;

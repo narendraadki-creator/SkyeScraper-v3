@@ -6,7 +6,6 @@ import { ArrowLeft, Eye, Lock } from 'lucide-react';
 
 export const MobileAgentUnitsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { projectId } = useParams();
 
   const handleBack = () => {
     navigate('/mobile/agent');

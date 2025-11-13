@@ -13,23 +13,17 @@ import {
   LogOut,
   ChevronRight,
   Mail,
-  Phone,
-  MapPin,
-  Building,
-  ArrowLeft,
-  Home,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileDeveloperSettingsPageProps {
   className?: string;
 }
 
-export const MobileDeveloperSettingsPage: React.FC<MobileDeveloperSettingsPageProps> = ({ className = '' }) => {
+export const MobileDeveloperSettingsPage: React.FC<MobileDeveloperSettingsPageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
 
   const handleLogout = () => {

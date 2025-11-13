@@ -12,23 +12,16 @@ import {
   LogOut,
   ChevronRight,
   Mail,
-  Phone,
-  MapPin,
-  Building,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileAgentSettingsPageProps {
   className?: string;
 }
 
-export const MobileAgentSettingsPage: React.FC<MobileAgentSettingsPageProps> = ({ className = '' }) => {
+export const MobileAgentSettingsPage: React.FC<MobileAgentSettingsPageProps> = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
 
   const handleLogout = () => {

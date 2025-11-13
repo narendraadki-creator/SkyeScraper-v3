@@ -11,12 +11,9 @@ import {
   MapPin, 
   DollarSign, 
   Calendar, 
-  FileText,
   Edit,
   Save,
   X,
-  Building,
-  Home,
   Target,
   TrendingUp,
   User,
@@ -24,20 +21,17 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  ArrowLeft,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileLeadDetailsProps {
   className?: string;
 }
 
-export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className = '' }) => {
+export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = () => {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);

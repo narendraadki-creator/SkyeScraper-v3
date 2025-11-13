@@ -18,8 +18,6 @@ import {
   Users,
   Plus,
   Eye,
-  Star,
-  TrendingUp
 } from 'lucide-react';
 
 export const AgentProjectsPage: React.FC = () => {

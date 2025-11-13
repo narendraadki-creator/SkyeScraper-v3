@@ -1,30 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
-import { getRoleBasedBackPath, getRoleBasedSharedPagePath } from '../../utils/rolePermissions';
+import { getRoleBasedBackPath } from '../../utils/rolePermissions';
 import { 
   User,
   Mail,
   Phone,
   MapPin,
   Building,
-  Calendar,
   Edit3,
   Save,
   X,
-  ArrowLeft,
-  Home,
-  Users,
-  Gift,
-  Settings
+  ArrowLeft
 } from 'lucide-react';
 
 interface MobileProfilePageProps {
   className?: string;
 }
 
-export const MobileProfilePage: React.FC<MobileProfilePageProps> = ({ className = '' }) => {
+export const MobileProfilePage: React.FC<MobileProfilePageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, role } = useAuth();

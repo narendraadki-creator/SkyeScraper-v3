@@ -19,14 +19,11 @@ import {
   Mail,
   Phone,
   Building,
-  MapPin,
   Calendar,
-  Eye,
   Edit,
   ArrowLeft,
   MoreVertical,
   AlertTriangle,
-  TrendingUp,
   DollarSign,
   Clock
 } from 'lucide-react';
@@ -155,7 +152,7 @@ export const AdminLeadsPage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
+  const _formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-AE', {
       year: 'numeric',
       month: 'short',
