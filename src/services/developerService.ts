@@ -1,6 +1,5 @@
 // src/services/developerService.ts
 import { supabase } from '../lib/supabase';
-import type { Organization } from '../lib/supabase';
 
 export interface DeveloperWithStats {
   id: string;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { developerService, type DeveloperWithStats } from '../services/developerService';
 
 function DeveloperCard({ developer }: { developer: DeveloperWithStats }) {

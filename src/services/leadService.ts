@@ -5,7 +5,6 @@ import type {
   UpdateLeadData, 
   LeadFilters, 
   LeadListResponse,
-  LeadServiceResponse 
 } from '../types/lead';
 
 export const leadService = {

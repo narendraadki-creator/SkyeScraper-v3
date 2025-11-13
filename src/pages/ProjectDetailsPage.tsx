@@ -21,7 +21,6 @@ export const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation() as { state?: { activeTab?: 'details' | 'floor' | 'location' | 'units' | 'payment' | 'files' } };
-  const { role } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

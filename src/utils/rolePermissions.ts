@@ -156,7 +156,7 @@ export const getRoleBasedBackPath = (role: string, currentPath: string): string 
 /**
  * Get the appropriate navigation path for shared pages based on role
  */
-export const getRoleBasedSharedPagePath = (role: string, page: 'profile' | 'security' | 'notifications' | 'language'): string => {
+export const getRoleBasedSharedPagePath = (_role: string, page: 'profile' | 'security' | 'notifications' | 'language'): string => {
   switch (page) {
     case 'profile':
       return '/mobile/profile';

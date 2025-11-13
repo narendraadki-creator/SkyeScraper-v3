@@ -8,7 +8,7 @@ import { Loading } from '../components/ui/Loading';
 import { projectService } from '../services/projectService';
 import { useAuth } from '../contexts/AuthContext';
 import { CreateProjectForm } from '../components/projects/CreateProjectForm';
-import { ArrowLeft, Building, FileText, Edit, Archive, Trash2 } from 'lucide-react';
+import { ArrowLeft, Building, FileText, Archive, Trash2 } from 'lucide-react';
 import type { Project, CreateProjectData } from '../types/project';
 
 interface ProjectEditProps { variant?: 'desktop' | 'mobile' }
