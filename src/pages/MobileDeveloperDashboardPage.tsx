@@ -82,6 +82,18 @@ const MobileDeveloperDashboardContent: React.FC = () => {
     }).format(amount);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'published':
+        return '#10B981';
+      case 'draft':
+        return '#F59E0B';
+      case 'archived':
+        return '#6B7280';
+      default:
+        return '#6B7280';
+    }
+  };
 
   if (loading) {
     return (
