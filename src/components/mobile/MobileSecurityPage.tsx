@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { 
   Shield,
   Lock,
@@ -22,9 +22,15 @@ interface MobileSecurityPageProps {
   className?: string;
 }
 
-export const MobileAgentSecurityPage: React.FC<MobileSecurityPageProps> = ({ className = '' }) => {
+export const MobileSecurityPage: React.FC<MobileSecurityPageProps> = ({ className = '' }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  console.log('=== SECURITY PAGE RENDERING ===');
+    
+    // ... rest of component
+  
+  // Debug: Log that this component is rendering
+  console.log('MobileSecurityPage is rendering');
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -589,8 +595,8 @@ export const MobileAgentSecurityPage: React.FC<MobileSecurityPageProps> = ({ cla
         </div>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

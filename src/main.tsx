@@ -1,5 +1,6 @@
 import './style.css'
 import './styles/mobile-design-system.css'
+import './styles/website-design-system.css'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 

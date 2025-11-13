@@ -11,7 +11,7 @@ import { Loading } from '../components/ui/Loading';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { projectService } from '../services/projectService';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Search, Filter, Eye, Edit, Trash2, Archive, Calendar, MapPin, DollarSign, Users } from 'lucide-react';
+import { Plus, Search, Filter, Eye, Edit, Trash2, Archive, Calendar, MapPin, DollarSign, Users, ArrowLeft } from 'lucide-react';
 import type { Project, ProjectFilters } from '../types/project';
 
 export const ProjectsPage: React.FC = () => {
@@ -218,6 +218,23 @@ export const ProjectsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (role === 'developer') {
+                  navigate('/developer');
+                } else if (role === 'agent') {
+                  navigate('/agent-projects');
+                } else {
+                  navigate('/developer'); // fallback
+                }
+              }}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Projects</h1>

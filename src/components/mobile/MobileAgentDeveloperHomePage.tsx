@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
-import { MobileLayout } from './MobileLayout';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+// import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Project } from '../../types/project';
 import { 
   ArrowLeft,
@@ -671,8 +671,8 @@ export const MobileAgentDeveloperHomePage: React.FC = () => {
         )}
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

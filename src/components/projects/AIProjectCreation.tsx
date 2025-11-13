@@ -1,7 +1,7 @@
 // AI project creation component
 // Follows unified architecture - uses same service and types
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -26,6 +26,31 @@ export const AIProjectCreation: React.FC<AIProjectCreationProps> = ({
   const [editableData, setEditableData] = useState<CreateProjectData | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState<string>('');
+
+  // Load logged-in organization name to lock developer_name
+  useEffect(() => {
+    (async () => {
+      try {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: employee } = await supabase
+          .from('employees')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .single();
+        if (employee?.organization_id) {
+          const { data: org } = await supabase
+            .from('organizations')
+            .select('name')
+            .eq('id', employee.organization_id)
+            .single();
+          if (org?.name) setOrgName(org.name);
+        }
+      } catch {}
+    })();
+  }, []);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -67,7 +92,7 @@ export const AIProjectCreation: React.FC<AIProjectCreationProps> = ({
         location: result.location,
         project_type: result.project_type,
         description: result.description,
-        developer_name: result.developer_name,
+        developer_name: orgName || result.developer_name,
         address: result.address,
         starting_price: result.starting_price,
         total_units: result.total_units,
@@ -272,8 +297,9 @@ export const AIProjectCreation: React.FC<AIProjectCreationProps> = ({
                       Developer Name
                     </label>
                     <Input
-                      value={editableData.developer_name || ''}
-                      onChange={(e) => handleDataEdit('developer_name', e.target.value)}
+                      value={orgName || editableData.developer_name || ''}
+                      onChange={() => { /* locked - no manual override */ }}
+                      disabled
                     />
                   </div>
                   <div>

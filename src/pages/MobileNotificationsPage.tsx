@@ -1,7 +1,7 @@
 import React from 'react';
-import { MobileAgentNotificationsPage } from '../components/mobile/MobileAgnetNotificationsPage';
+import { MobileNotificationsPage } from '../components/mobile/MobileNotificationsPage';
 
 export const MobileNotificationsPageWrapper: React.FC = () => {
-  return <MobileAgentNotificationsPage />;
+  return <MobileNotificationsPage />;
 };
 

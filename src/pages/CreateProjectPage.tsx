@@ -9,6 +9,7 @@ import { Badge } from '../components/ui/Badge';
 import { CreateProjectForm } from '../components/projects/CreateProjectForm';
 import { AIProjectCreation } from '../components/projects/AIProjectCreation';
 import { projectService } from '../services/projectService';
+import { fileService } from '../services/fileService';
 import { useAuth } from '../contexts/AuthContext';
 import { Edit3, Zap, ArrowLeft, CheckCircle } from 'lucide-react';
 import type { CreateProjectData } from '../types/project';
@@ -77,6 +78,16 @@ export const CreateProjectPage: React.FC = () => {
       console.log('Full original data:', data);
       const result = await projectService.createProject(cleanData);
       
+      // Fallback: ensure brochure appears in Files tab for AI-created projects
+      try {
+        const maybeFile: File | undefined = (data as any).brochure_file;
+        if (maybeFile && result?.id) {
+          await fileService.uploadFile(maybeFile, result.id, 'brochure');
+        }
+      } catch (e) {
+        console.warn('Fallback brochure upload skipped:', e);
+      }
+
       setCreatedProject(result);
       setSuccess(true);
       

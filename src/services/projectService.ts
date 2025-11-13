@@ -3,10 +3,10 @@ import { supabase } from '../lib/supabase';
 import type { CreateProjectData, Project } from '../types/project';
 import type { UserRole } from '../contexts/AuthContext';
 
-// Helper function to get user role with new three-role system
-const getUserRole = (employee: { role: string; role_new?: string | null }): UserRole => {
-  // Use role_new if available, fallback to role for backward compatibility
-  const role = employee.role_new || employee.role;
+// Helper function to get user role with three-role system
+const getUserRole = (employee: { role: string }): UserRole => {
+  // Use the role from the database
+  const role = employee.role;
   
   // Validate and return typed role
   if (role === 'admin' || role === 'developer' || role === 'agent') {
@@ -59,7 +59,7 @@ export const projectService = {
     // Get employee data
     const { data: employee } = await supabase
       .from('employees')
-      .select('id, organization_id, role, role_new')
+      .select('id, organization_id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -76,6 +76,7 @@ export const projectService = {
 
     // Handle file upload if brochure is provided
     let brochureUrl = input.brochure_url;
+    let brochureStoragePath: string | undefined;
     if (input.brochure_file) {
       try {
         const fileExt = input.brochure_file.name.split('.').pop();
@@ -98,6 +99,7 @@ export const projectService = {
             .getPublicUrl(filePath);
           
           brochureUrl = urlData.publicUrl;
+          brochureStoragePath = filePath;
         }
       } catch (error) {
         console.error('File upload failed:', error);
@@ -135,6 +137,39 @@ export const projectService = {
       .single();
 
     if (error) throw error;
+    // If we uploaded a brochure file for AI extraction, also create a record in project_files
+    if (input.brochure_file && brochureUrl && brochureStoragePath && data?.id) {
+      try {
+        const { data: fileRecord, error: fileErr } = await supabase
+          .from('project_files')
+          .insert({
+            project_id: data.id,
+            organization_id: employee.organization_id,
+            file_name: input.brochure_file.name,
+            file_path: brochureStoragePath,
+            file_purpose: 'brochure',
+            file_size: input.brochure_file.size,
+            mime_type: input.brochure_file.type,
+            storage_bucket: 'project-files',
+            storage_path: brochureStoragePath,
+            public_url: brochureUrl,
+            uploaded_by: employee.id,
+          })
+          .select()
+          .single();
+
+        if (!fileErr && fileRecord?.id) {
+          // Link source file to project for traceability
+          await supabase
+            .from('projects')
+            .update({ source_file_id: fileRecord.id })
+            .eq('id', data.id);
+        }
+      } catch (e) {
+        console.warn('Failed to create project_files record for brochure:', e);
+      }
+    }
+
     return data;
   },
 
@@ -144,7 +179,7 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -187,7 +222,7 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -250,7 +285,7 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 
@@ -293,7 +328,7 @@ export const projectService = {
 
     const { data: employee } = await supabase
       .from('employees')
-      .select('organization_id, role, role_new')
+      .select('organization_id, role')
       .eq('user_id', user.id)
       .single();
 

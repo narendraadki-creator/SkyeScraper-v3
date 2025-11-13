@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { MobileSupportModal } from './MobileSupportModal';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { 
   User,
   Bell,
@@ -373,8 +373,8 @@ export const MobileAgentSettingsPage: React.FC<MobileAgentSettingsPageProps> = (
         onClose={() => setShowSupportModal(false)}
       />
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../../contexts/AuthContext'; // Not currently used
 import { 
   User,
-  Home,
-  Users,
-  TrendingUp,
-  Settings,
   LogOut,
   Globe,
-  Languages
+  Settings
 } from 'lucide-react';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -30,8 +27,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, role } = useAuth();
+  // const { user } = useAuth(); // Not currently used
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleUserMenuAction = (action: string) => {
@@ -51,13 +47,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
     }
   };
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+  // Navigation function removed - now handled by RoleBasedBottomNavigation
 
-  const isActiveRoute = (path: string) => {
-    return location.pathname === path;
-  };
+  // Active route detection removed - now handled by RoleBasedBottomNavigation
 
   return (
     <div className={`mobile-app ${className}`}>
@@ -164,39 +156,8 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
         {children}
       </main>
 
-      {/* Bottom Navigation Bar */}
-      <nav className="mobile-bottom-nav">
-        <div className="mobile-bottom-nav-content">
-          <button 
-            className={`mobile-nav-item ${isActiveRoute('/mobile/developer') ? 'active' : ''}`}
-            onClick={() => handleNavigation('/mobile/developer')}
-          >
-            <Home className="mobile-nav-icon" />
-            <span className="mobile-nav-label">Home</span>
-          </button>
-          <button 
-            className={`mobile-nav-item ${isActiveRoute('/mobile/leads') ? 'active' : ''}`}
-            onClick={() => handleNavigation('/mobile/leads')}
-          >
-            <Users className="mobile-nav-icon" />
-            <span className="mobile-nav-label">Leads</span>
-          </button>
-          <button 
-            className={`mobile-nav-item ${isActiveRoute('/mobile/promotions') ? 'active' : ''}`}
-            onClick={() => handleNavigation('/mobile/promotions')}
-          >
-            <TrendingUp className="mobile-nav-icon" />
-            <span className="mobile-nav-label">Promotions</span>
-          </button>
-          <button 
-            className={`mobile-nav-item ${isActiveRoute('/mobile/settings') ? 'active' : ''}`}
-            onClick={() => handleNavigation('/mobile/settings')}
-          >
-            <Settings className="mobile-nav-icon" />
-            <span className="mobile-nav-label">Settings</span>
-          </button>
-        </div>
-      </nav>
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

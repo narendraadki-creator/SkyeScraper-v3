@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
-import { MobileLayout } from './MobileLayout';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+// import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Lead, UpdateLeadData, LeadStatus, LeadStage } from '../../types/lead';
 import { 
   Phone, 
@@ -207,12 +207,44 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
 
   if (loading) {
     return (
-      <MobileLayout 
-        title="Lead Details"
-        subtitle="Loading..."
-        showBackButton={true}
-        onBack={handleBack}
-      >
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#F8F9F9',
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #016A5D 0%, #014D43 100%)',
+          padding: '20px',
+          color: 'white',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          position: 'relative'
+        }}>
+          <button
+            onClick={handleBack}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px',
+              position: 'absolute',
+              left: '20px',
+              top: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <ArrowLeft size={20} color="white" />
+          </button>
+          <div style={{ textAlign: 'center', paddingTop: '10px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>Lead Details</h1>
+            <p style={{ fontSize: '14px', margin: '4px 0 0 0', opacity: 0.9 }}>Loading...</p>
+          </div>
+        </div>
+        
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -223,18 +255,52 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
         }}>
           Loading lead details...
         </div>
-      </MobileLayout>
+        
+        <RoleBasedBottomNavigation />
+      </div>
     );
   }
 
   if (error && !lead) {
     return (
-      <MobileLayout 
-        title="Lead Details"
-        subtitle="Error"
-        showBackButton={true}
-        onBack={handleBack}
-      >
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#F8F9F9',
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #016A5D 0%, #014D43 100%)',
+          padding: '20px',
+          color: 'white',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          position: 'relative'
+        }}>
+          <button
+            onClick={handleBack}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px',
+              position: 'absolute',
+              left: '20px',
+              top: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <ArrowLeft size={20} color="white" />
+          </button>
+          <div style={{ textAlign: 'center', paddingTop: '10px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>Lead Details</h1>
+            <p style={{ fontSize: '14px', margin: '4px 0 0 0', opacity: 0.9 }}>Error</p>
+          </div>
+        </div>
+        
         <div style={{ 
           textAlign: 'center', 
           padding: '40px 20px',
@@ -266,18 +332,52 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
             Try Again
           </button>
         </div>
-      </MobileLayout>
+        
+        <RoleBasedBottomNavigation />
+      </div>
     );
   }
 
   if (!lead) {
     return (
-      <MobileLayout 
-        title="Lead Details"
-        subtitle="Not Found"
-        showBackButton={true}
-        onBack={handleBack}
-      >
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#F8F9F9',
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #016A5D 0%, #014D43 100%)',
+          padding: '20px',
+          color: 'white',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          position: 'relative'
+        }}>
+          <button
+            onClick={handleBack}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px',
+              position: 'absolute',
+              left: '20px',
+              top: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <ArrowLeft size={20} color="white" />
+          </button>
+          <div style={{ textAlign: 'center', paddingTop: '10px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>Lead Details</h1>
+            <p style={{ fontSize: '14px', margin: '4px 0 0 0', opacity: 0.9 }}>Not Found</p>
+          </div>
+        </div>
+        
         <div style={{ 
           textAlign: 'center', 
           padding: '40px 20px',
@@ -309,7 +409,9 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
             Back to Leads
           </button>
         </div>
-      </MobileLayout>
+        
+        <RoleBasedBottomNavigation />
+      </div>
     );
   }
 
@@ -959,8 +1061,8 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
         </div>
       </div>
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Role-Based Bottom Navigation */}
+      <RoleBasedBottomNavigation />
     </div>
   );
 };

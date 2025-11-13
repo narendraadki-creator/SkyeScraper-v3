@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { UnitsPage } from './UnitsPage';
+import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
 import { ArrowLeft } from 'lucide-react';
 
 export const MobileProjectUnitsPage: React.FC = () => {
@@ -15,7 +16,8 @@ export const MobileProjectUnitsPage: React.FC = () => {
         backgroundColor: '#F8F9F9',
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: 'Montserrat, sans-serif'
+        fontFamily: 'Montserrat, sans-serif',
+        paddingBottom: '80px'
       }}>
         {/* Header */}
         <div style={{
@@ -69,6 +71,9 @@ export const MobileProjectUnitsPage: React.FC = () => {
             <UnitsPage variant="mobile" initialShowImport={true} />
           </div>
         </div>
+
+        {/* Role-Based Bottom Navigation */}
+        <RoleBasedBottomNavigation />
       </div>
     </ProtectedRoute>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { projectService } from '../../services/projectService';
 import { unitService } from '../../services/unitService';
-import { AgentBottomNavigation } from './AgentBottomNavigation';
+import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
+import { canEditProject, canDeleteProject, canManageUnits, getRoleBasedBackPath } from '../../utils/rolePermissions';
 import type { Project } from '../../types/project';
 import type { Unit } from '../../types/unit';
 import { 
@@ -48,6 +49,7 @@ type TabType = 'overview' | 'floor-plans' | 'brochures' | 'availability' | 'paym
 export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetailsProps> = ({ className = '' }) => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, role } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [projectFiles, setProjectFiles] = useState<any[]>([]);
@@ -262,7 +264,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
     if (!project) return;
     try {
       await projectService.deleteProject(project.id);
-      navigate('/mobile/developer');
+      navigate('/mobile/dev');
     } catch (error) {
       console.error('Error deleting project:', error);
     }
@@ -676,23 +678,25 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
         return (
           <div style={{ padding: '16px' }}>
             {/* Unit Data Upload (uses existing Units import logic) */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-              <button
-                onClick={() => navigate(`/mobile/developer/project/${project?.id}/units`)}
-                style={{
-                  padding: '10px 12px',
-                  backgroundColor: 'var(--primary-600)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                Upload Unit Data
-              </button>
-            </div>
+            {canManageUnits(role) && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+                <button
+                  onClick={() => navigate(`/mobile/dev/project/${project?.id}/units`)}
+                  style={{
+                    padding: '10px 12px',
+                    backgroundColor: 'var(--primary-600)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Upload Unit Data
+                </button>
+              </div>
+            )}
             <div style={{
               backgroundColor: 'white',
               borderRadius: '12px',
@@ -1024,7 +1028,7 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
           gap: '12px'
         }}>
           <button
-            onClick={() => navigate('/mobile/developer')}
+            onClick={() => navigate(getRoleBasedBackPath(role || 'developer', location.pathname))}
             style={{
               backgroundColor: 'white',
               border: '1px solid rgba(1, 106, 93, 0.15)',
@@ -1065,38 +1069,42 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
           display: 'flex',
           gap: '8px'
         }}>
-          <button
-            onClick={() => navigate(`/mobile/developer/project/${project.id}/edit`)}
-            style={{
-              backgroundColor: 'white',
-              border: '1px solid rgba(1, 106, 93, 0.15)',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-            }}
-          >
-            <Edit size={16} color="#016A5D" />
-          </button>
-          <button
-            onClick={() => navigate(`/mobile/developer/project/${project.id}/units`)}
-            style={{
-              backgroundColor: 'white',
-              border: '1px solid rgba(1, 106, 93, 0.15)',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
-            }}
-          >
-            <Building size={16} color="#016A5D" />
-          </button>
+          {canEditProject(role) && (
+            <button
+              onClick={() => navigate(`/mobile/dev/project/${project.id}/edit`)}
+              style={{
+                backgroundColor: 'white',
+                border: '1px solid rgba(1, 106, 93, 0.15)',
+                borderRadius: '8px',
+                padding: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <Edit size={16} color="#016A5D" />
+            </button>
+          )}
+          {canManageUnits(role) && (
+            <button
+                onClick={() => navigate(`/mobile/dev/project/${project.id}/units`)}
+              style={{
+                backgroundColor: 'white',
+                border: '1px solid rgba(1, 106, 93, 0.15)',
+                borderRadius: '8px',
+                padding: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <Building size={16} color="#016A5D" />
+            </button>
+          )}
           <button
             onClick={() => { setConfirmAction('archive'); setShowConfirmDialog(true); }}
             title={project.status === 'archived' ? 'Unarchive' : 'Archive'}
@@ -1378,8 +1386,8 @@ export const MobileDeveloperProjectDetails: React.FC<MobileDeveloperProjectDetai
         </div>
       )}
 
-      {/* Agent Bottom Navigation */}
-      <AgentBottomNavigation />
+      {/* Developer Bottom Navigation */}
+                <RoleBasedBottomNavigation />
 
       {/* Confirmation Dialog */}
       {showConfirmDialog && (

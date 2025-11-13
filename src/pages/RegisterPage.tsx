@@ -65,9 +65,9 @@ export const RegisterPage: React.FC = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    // Website validation
-    if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
-      newErrors.website = 'Please enter a valid URL (starting with http:// or https://)';
+    // Website validation (allow without scheme; we'll normalize to https://)
+    if (formData.website && !/^(https?:\/\/)?[^\s]+\.[^\s]+/.test(formData.website)) {
+      newErrors.website = 'Please enter a valid website URL';
     }
 
     setErrors(newErrors);
@@ -78,6 +78,7 @@ export const RegisterPage: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      setErrors(prev => ({ ...prev, submit: 'Please fix the highlighted errors above.' }));
       return;
     }
 
@@ -86,16 +87,35 @@ export const RegisterPage: React.FC = () => {
     console.log('Form data:', formData);
     
     try {
+      // Offline guard
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setErrors({ submit: 'You appear to be offline. Please connect to the internet and try again.' });
+        return;
+      }
+
+      // Normalize website to include scheme
+      const websiteToSave = formData.website
+        ? (/^https?:\/\//.test(formData.website) ? formData.website : `https://${formData.website}`)
+        : null;
       // Create user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: undefined, // Disable email confirmation for now
+        }
       });
 
       if (authError) {
         console.error('Auth error:', authError);
-        setErrors({ submit: authError.message || 'Registration failed' });
-        return;
+        // Handle specific 406 error (email confirmation issue)
+        if (authError.message?.includes('406') || authError.message?.includes('Not Acceptable')) {
+          console.warn('Email confirmation failed, but user was created. Continuing with registration...');
+          // Don't return - continue with organization and employee creation
+        } else {
+          setErrors({ submit: authError.message || 'Registration failed' });
+          return;
+        }
       }
 
       if (!authData.user) {
@@ -111,7 +131,7 @@ export const RegisterPage: React.FC = () => {
           type: formData.organizationType,
           contact_email: formData.email, // Add required contact_email field
           contact_phone: formData.contactPhone || null,
-          website: formData.website || null,
+          website: websiteToSave,
           address: formData.address || null,
           description: formData.description || null,
           status: 'pending',
@@ -129,11 +149,9 @@ export const RegisterPage: React.FC = () => {
       // Generate employee code
       const employeeCode = `EMP-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
-      // Determine the employee role based on organization type (NEW THREE-ROLE SYSTEM)
+      // Determine the employee role based on organization type (THREE-ROLE SYSTEM)
       const employeeRole = formData.organizationType === 'admin' ? 'admin' : 
                           formData.organizationType === 'developer' ? 'developer' : 'agent';
-      const employeeRoleNew = formData.organizationType === 'admin' ? 'admin' : 
-                             formData.organizationType === 'developer' ? 'developer' : 'agent';
       
       console.log('Creating employee record with data:', {
         user_id: authData.user.id,
@@ -143,53 +161,24 @@ export const RegisterPage: React.FC = () => {
         last_name: formData.lastName,
         email: formData.email,
         role: employeeRole,
-        role_new: employeeRoleNew,
         status: 'active',
       });
       
-      // Try to insert with role_new first, fallback to just role if column doesn't exist
-      let empData, empError;
-      
-      try {
-        const result = await supabase
-          .from('employees')
-          .insert({
-            user_id: authData.user.id,
-            organization_id: orgData.id,
-            employee_code: employeeCode,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            role: employeeRole,
-            role_new: employeeRoleNew, // Try with role_new
-            status: 'active',
-          })
-          .select()
-          .single();
-        
-        empData = result.data;
-        empError = result.error;
-      } catch (error) {
-        // If role_new column doesn't exist, try without it
-        console.log('role_new column might not exist, trying without it...');
-        const result = await supabase
-          .from('employees')
-          .insert({
-            user_id: authData.user.id,
-            organization_id: orgData.id,
-            employee_code: employeeCode,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            role: employeeRole,
-            status: 'active',
-          })
-          .select()
-          .single();
-        
-        empData = result.data;
-        empError = result.error;
-      }
+      // Create employee record
+      const { data: empData, error: empError } = await supabase
+        .from('employees')
+        .insert({
+          user_id: authData.user.id,
+          organization_id: orgData.id,
+          employee_code: employeeCode,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          role: employeeRole,
+          status: 'active',
+        })
+        .select()
+        .single();
 
       console.log('Employee creation result:', { empData, empError });
 
@@ -202,7 +191,7 @@ export const RegisterPage: React.FC = () => {
       // Registration successful
       console.log('Registration successful');
       console.log('Created organization:', orgData);
-      setErrors({ submit: 'Registration successful! Please check your email to confirm your account.' });
+      setErrors({ submit: 'Registration successful! You can now log in with your credentials.' });
       
       // Clear form
       setFormData({
@@ -239,25 +228,24 @@ export const RegisterPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create Your Organization
-          </h1>
-          <p className="text-gray-600">
-            Join SkyeScraper and start managing your real estate projects
+    <div className="page-wrapper">
+      {/* Brand hero header to match premium site */}
+      <section className="page-header">
+        <div className="container">
+          <h1 className="hero-title" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>SKYESCRAPER</h1>
+          <p className="page-subtitle" style={{ marginTop: 'var(--space-2xs)' }}>
+            Discover · Manage · Book Properties in Real-Time
           </p>
         </div>
+      </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Organization Registration</CardTitle>
-            <CardDescription>
-              Fill out the form below to create your organization account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <main className="section-content">
+        <div className="container-narrow">
+            <div className="section-card" style={{ padding: 'var(--space-sm)' }}>
+            <div className="text-center" style={{ marginBottom: 'var(--space-sm)' }}>
+              <div className="page-title">Organization Registration</div>
+              <div className="page-subtitle">Fill out the form below to create your organization account</div>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal Information */}
               <div className="space-y-4">
@@ -388,9 +376,9 @@ export const RegisterPage: React.FC = () => {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

@@ -2,6 +2,7 @@
 // Follows unified architecture - same form for all creation methods
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -24,6 +25,8 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   initialData,
   isEditMode = false,
 }) => {
+  const { organizationId } = useAuth();
+  const [orgName, setOrgName] = useState<string>('');
   // Initialize form data only once - never reset it
   const [formData, setFormData] = useState<CreateProjectData>(() => {
     if (initialData) {
@@ -57,7 +60,29 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
   const [newLandmark, setNewLandmark] = useState({ name: '', distance: '' });
   const [newPaymentPlan, setNewPaymentPlan] = useState({ name: '', description: '', terms: '' });
 
-  // NO useEffect for form data - it's initialized once and never reset
+  // Prefill developer_name with organization name via lightweight fetch when available
+  // Prefill developer_name with org name from supabase
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        if (!organizationId) return;
+        const { supabase } = await import('../../lib/supabase');
+        const { data } = await supabase
+          .from('organizations')
+          .select('name')
+          .eq('id', organizationId)
+          .single();
+        if (isMounted && data?.name) {
+          setOrgName(data.name);
+          if (!formData.developer_name) {
+            setFormData(prev => ({ ...prev, developer_name: data.name }));
+          }
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, [organizationId]);
 
   const projectTypeOptions = [
     { value: 'Apartment', label: 'Apartment' },
@@ -269,9 +294,10 @@ export const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                 Developer Name
               </label>
               <Input
-                value={formData.developer_name || ''}
-                onChange={(e) => handleInputChange('developer_name', e.target.value)}
-                placeholder="Enter developer name"
+                value={orgName || formData.developer_name || ''}
+                onChange={() => { /* locked field - no manual override */ }}
+                placeholder="Developer"
+                disabled
               />
             </div>
           </div>
