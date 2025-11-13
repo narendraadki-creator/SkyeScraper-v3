@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 // import { MobileLayout } from './MobileLayout'; // REMOVED - using RoleBasedBottomNavigation instead
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';

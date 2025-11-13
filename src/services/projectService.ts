@@ -1,6 +1,6 @@
 // src/services/projectService.ts
 import { supabase } from '../lib/supabase';
-import type { CreateProjectData, Project } from '../types/project';
+import type { Project } from '../types/project';
 
 // Helper function to get user role with three-role system
 const getUserRole = (employee: { role: string }): string => {

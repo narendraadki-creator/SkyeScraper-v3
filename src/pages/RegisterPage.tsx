@@ -4,7 +4,6 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Textarea } from '../components/ui/Textarea';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { supabase } from '../lib/supabase';
 
