@@ -615,8 +615,7 @@ export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = ({ className 
                   fontFamily: 'Montserrat, sans-serif'
                 }}>
                   {lead.first_name}
-                  </span>
-                )}
+                </span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
