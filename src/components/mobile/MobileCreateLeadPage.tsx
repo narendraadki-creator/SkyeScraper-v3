@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import { LEAD_SOURCES, UNIT_TYPES } from '../../types/lead';

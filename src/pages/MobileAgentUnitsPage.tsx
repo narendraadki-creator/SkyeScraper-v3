@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { RoleBasedBottomNavigation } from '../components/mobile/RoleBasedBottomNavigation';
 import { ArrowLeft, Eye, Lock } from 'lucide-react';

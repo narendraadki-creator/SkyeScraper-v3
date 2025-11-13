@@ -25,7 +25,8 @@ import {
   MoreVertical,
   AlertTriangle,
   DollarSign,
-  Clock
+  Clock,
+  Eye
 } from 'lucide-react';
 
 export const AdminLeadsPage: React.FC = () => {
@@ -152,7 +153,6 @@ export const AdminLeadsPage: React.FC = () => {
     }).format(amount);
   };
 
-  const _formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-AE', {
       year: 'numeric',
       month: 'short',

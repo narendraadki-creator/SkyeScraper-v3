@@ -21,7 +21,7 @@ interface MobileAgentSettingsPageProps {
 
 export const MobileAgentSettingsPage: React.FC<MobileAgentSettingsPageProps> = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { user, role } = useAuth();
   const [showSupportModal, setShowSupportModal] = useState(false);
 
   const handleLogout = () => {

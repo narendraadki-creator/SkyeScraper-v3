@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { leadService } from '../../services/leadService';
 import { RoleBasedBottomNavigation } from './RoleBasedBottomNavigation';
 import type { Lead, LeadFilters, LeadStatus } from '../../types/lead';
@@ -13,8 +12,7 @@ import {
   User,
   Phone,
   Mail,
-  Eye,
-  MapPin
+  Eye
 } from 'lucide-react';
 
 interface MobileDeveloperLeadsPageProps {

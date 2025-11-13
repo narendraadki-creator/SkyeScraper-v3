@@ -18,6 +18,7 @@ import {
   Users,
   Plus,
   Eye,
+  Star,
 } from 'lucide-react';
 
 export const AgentProjectsPage: React.FC = () => {

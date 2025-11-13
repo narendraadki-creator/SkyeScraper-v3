@@ -31,7 +31,6 @@ interface MobileLeadDetailsProps {
 export const MobileLeadDetails: React.FC<MobileLeadDetailsProps> = () => {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);

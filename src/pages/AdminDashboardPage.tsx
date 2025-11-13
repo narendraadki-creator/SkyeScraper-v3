@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Shield
+  Shield,
+  Settings
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {

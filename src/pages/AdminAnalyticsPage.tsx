@@ -17,7 +17,9 @@ import {
   ArrowLeft,
   AlertTriangle,
   Clock,
-  Award
+  Award,
+  UserCheck,
+  Eye
 } from 'lucide-react';
 
 export const AdminAnalyticsPage: React.FC = () => {

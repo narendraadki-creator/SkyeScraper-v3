@@ -10,7 +10,6 @@ import {
   Filter,
   Phone,
   Mail,
-  MapPin,
   DollarSign,
   Calendar,
   Users,
@@ -29,7 +28,6 @@ interface MobileLeadsPageProps {
 
 export const MobileLeadsPage: React.FC<MobileLeadsPageProps> = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

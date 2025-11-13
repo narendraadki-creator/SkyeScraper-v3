@@ -12,7 +12,11 @@ import {
   Edit3,
   Save,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Home,
+  Users,
+  Gift,
+  Settings
 } from 'lucide-react';
 
 interface MobileProfilePageProps {

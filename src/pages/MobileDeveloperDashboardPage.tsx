@@ -10,10 +10,7 @@ import {
   LogOut, 
   Building, 
   Users, 
-  Shield, 
-  BarChart3,
   DollarSign,
-  Calendar,
   MapPin,
   ArrowRight
 } from 'lucide-react';
@@ -25,6 +22,7 @@ const MobileDeveloperDashboardContent: React.FC = () => {
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leads, setLeads] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalUnits: 0,
