@@ -13,7 +13,8 @@ import {
   User,
   Phone,
   Mail,
-  Eye
+  Eye,
+  MapPin
 } from 'lucide-react';
 
 interface MobileDeveloperLeadsPageProps {

@@ -18,8 +18,6 @@ import {
   CreditCard,
   Eye,
   Share2,
-  Image as ImageIcon,
-  File,
   FileText,
   Home,
   Edit,

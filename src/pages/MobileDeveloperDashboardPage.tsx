@@ -18,7 +18,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 import type { Project } from '../types/project';
-import type { Lead } from '../types/lead';
 
 const MobileDeveloperDashboardContent: React.FC = () => {
   const navigate = useNavigate();
