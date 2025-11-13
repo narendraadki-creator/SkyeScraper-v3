@@ -12,7 +12,8 @@ import {
   LogOut,
   ChevronRight,
   Mail,
-  ArrowLeft
+  ArrowLeft,
+  Building
 } from 'lucide-react';
 
 interface MobileAgentSettingsPageProps {
